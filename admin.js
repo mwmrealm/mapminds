@@ -2,6 +2,16 @@
    Saves places (data/places.json) and photos (photos/*.jpg) into your GitHub repo through the GitHub API,
    so the public site shows them after it redeploys. Without a token it works in "local mode" (edits stay in this browser). */
 'use strict';
+/* accepts a pasted dashboard link or an API link and reduces it to https://PROJECT.supabase.co */
+function mmSupabaseBase(u) {
+  u = String(u || '').trim(); if (!u) return '';
+  try {
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    const x = new URL(u), m = x.pathname.match(/\/project\/([a-z0-9]{15,25})/i);
+    if (/(^|\.)supabase\.com$/i.test(x.hostname) && m) return 'https://' + m[1] + '.supabase.co';
+    return x.origin;
+  } catch (e) { return u.replace(/\/+$/, ''); }
+}
 const CATS = {
   gate: ['Gate 校门', '#2F80ED', 'fa-door-open'], library: ['Library 图书馆', '#7C3AED', 'fa-book'], food: ['Food 餐饮', '#F59E0B', 'fa-utensils'],
   parking: ['Parking 停车', '#64748B', 'fa-square-parking'], bus: ['Transit 公交地铁', '#0EA5E9', 'fa-train-subway'], sports: ['Sports 运动', '#10B981', 'fa-futbol'],
@@ -63,7 +73,7 @@ const Admin = (() => {
 
 
   /* ---------- Supabase backend (free database + photo storage) ---------- */
-  const SBC = window.MM_CONFIG || {}, sbOn = !!(SBC.supabaseUrl && SBC.anonKey), sbUrl = () => String(SBC.supabaseUrl || '').replace(/\/+$/, '');
+  const SBC = window.MM_CONFIG || {}, sbOn = !!(SBC.supabaseUrl && SBC.anonKey), sbUrl = () => mmSupabaseBase(SBC.supabaseUrl);
   let SES = lsGet('mm_sb_session', null);
   const sbFields = ['id', 'zh', 'en', 'cat', 'code', 'lat', 'lon', 'conf', 'aliases', 'dz', 'de', 'photos'];
   async function sbAuth(body, grant) {
@@ -100,7 +110,7 @@ const Admin = (() => {
     const email = $('sbEmail').value.trim(), pw = $('sbPass').value; if (!email || !pw) { $('sbMsg').textContent = 'Enter your admin email and password.'; return; }
     $('sbMsg').textContent = 'Signing in…';
     try { await sbAuth({ email, password: pw }, 'password'); lsSet('mm_sb_email', email); await sbStart(); closeSb(); }
-    catch (e) { $('sbMsg').textContent = e instanceof TypeError ? 'Cannot reach Supabase from this browser (network/VPN).' : (e.status === 400 ? 'Wrong email or password.' : e.message); }
+    catch (e) { $('sbMsg').textContent = /invalid path/i.test(e.message || '') ? 'The Supabase address in config.js looks wrong. This page is calling: "' + sbUrl() + '" — it must look like https://abcdxyz.supabase.co (no spaces, nothing after .supabase.co).' : e instanceof TypeError ? 'Cannot reach Supabase from this browser (network/VPN).' : (e.status === 400 ? 'Wrong email or password.' : e.message); }
   }
   async function sbStart() {
     PLACES = await sbLoad(); MODE = 'sb'; afterLoad();

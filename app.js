@@ -1,6 +1,16 @@
 /* MapMinds v4 core: data, search, map, UI.  (navigation lives in nav.js, map editor in editor.js)
    Data flow: campus-places.csv (curated, always available)  +  OpenStreetMap via Overpass (optional, silent refresh) */
 'use strict';
+/* accepts a pasted dashboard link or an API link and reduces it to https://PROJECT.supabase.co */
+function mmSupabaseBase(u) {
+  u = String(u || '').trim(); if (!u) return '';
+  try {
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    const x = new URL(u), m = x.pathname.match(/\/project\/([a-z0-9]{15,25})/i);
+    if (/(^|\.)supabase\.com$/i.test(x.hostname) && m) return 'https://' + m[1] + '.supabase.co';
+    return x.origin;
+  } catch (e) { return u.replace(/\/+$/, ''); }
+}
 
 /* =====================================================================
    CONFIG
@@ -19,7 +29,16 @@ const OVERPASS = [
   'https://overpass.osm.jp/api/interpreter'
 ];
 const TILE_OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ALT = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+/* Map tile servers, tried in order. Add your own keyed provider (Tianditu, MapTiler, Stadia…) via tileUrl in config.js: it is used first. */
+const TILES = [];
+(function () {
+  const C = window.MM_CONFIG || {};
+  if (C.tileUrl) TILES.push({ u: C.tileUrl, a: C.tileAttribution || '© map data providers', s: C.tileSubdomains || 'abc' });
+  TILES.push({ u: TILE_OSM, a: '© OpenStreetMap contributors', s: 'abc' });
+  TILES.push({ u: 'https://tile.openstreetmap.de/{z}/{x}/{y}.png', a: '© OpenStreetMap contributors', s: 'abc' });
+  TILES.push({ u: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', a: '© OpenStreetMap contributors, HOT', s: 'abc' });
+})();
+let tileIdx = 0;
 const TILE_SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const DATA_TTL = 7 * 864e5;
 const APP_VERSION = '4.0';
@@ -50,7 +69,7 @@ const fmt = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
    ===================================================================== */
 let PLACES = [], OWN = [], OSMP = [], CUSTOM = [], HIDDEN = [], OVER = {};
 let map = null, markerLayer = null, routeLayer = null, altLayer = null, userMarker = null, userCircle = null, startMarker = null, destMarker = null, baseLayer = null;
-let satOn = false, filter = 'all', dark = false, gcjFix = false, tileFallbackUsed = false;
+let satOn = false, filter = 'all', dark = false, gcjFix = false, tileFallbackUsed = false;  // tileFallbackUsed kept for old code paths
 let SELECTED = null, SELECTED_ROOM = null, pendingRoom = null, USER = null, START = null, pickStart = false;
 let dataState = 'idle', dataTime = null, dataLive = false, dataLog = [], FAVS = [];
 let UI_MODE = 'browse', CUR = 'splash';        // browse | preview | nav | arrived | edit
@@ -267,7 +286,7 @@ async function loadOwn() {
   if (C.supabaseUrl && C.anonKey) {                          // live database (admin dashboard writes here)
     try {
       const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 8000);
-      const r = await fetch(C.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/places?select=*&order=id', { headers: C.anonKey.startsWith('eyJ') ? { apikey: C.anonKey, Authorization: 'Bearer ' + C.anonKey } : { apikey: C.anonKey }, signal: ctl.signal });
+      const r = await fetch(mmSupabaseBase(C.supabaseUrl) + '/rest/v1/places?select=*&order=id', { headers: C.anonKey.startsWith('eyJ') ? { apikey: C.anonKey, Authorization: 'Bearer ' + C.anonKey } : { apikey: C.anonKey }, signal: ctl.signal });
       clearTimeout(tm); if (r.ok) { const rows = await r.json(); if (Array.isArray(rows) && rows.length) items = normOwn(rows); }
     } catch (e) {}
   }
@@ -406,15 +425,15 @@ function doSearch(q) {
 function makeBase(kind) {
   const opts = { maxZoom: 19, crossOrigin: true };
   if (kind === 'sat') return L.tileLayer(TILE_SAT, { ...opts, attribution: 'Imagery © Esri' });
-  if (kind === 'alt') return L.tileLayer(TILE_ALT, { ...opts, subdomains: 'abcd', attribution: '© OpenStreetMap contributors © CARTO' });
-  return L.tileLayer(TILE_OSM, { ...opts, attribution: '© OpenStreetMap contributors' });
+  const t = TILES[tileIdx] || TILES[0];
+  return L.tileLayer(t.u, { ...opts, subdomains: t.s, attribution: t.a });
 }
 function watchTileErrors(layer) {
   let errs = 0;
   layer.on('tileload', () => { errs = 0; });
   layer.on('tileerror', () => {
-    if (++errs >= 6 && navigator.onLine && !satOn && !tileFallbackUsed) {
-      tileFallbackUsed = true; map.removeLayer(baseLayer); baseLayer = makeBase('alt').addTo(map); baseLayer.bringToBack(); toast(T('tilesAlt'), 4000);
+    if (++errs >= 6 && navigator.onLine && !satOn && tileIdx < TILES.length - 1) {
+      errs = 0; tileIdx++; tileFallbackUsed = true; map.removeLayer(baseLayer); baseLayer = makeBase('osm').addTo(map); baseLayer.bringToBack(); watchTileErrors(baseLayer); toast(T('tilesAlt'), 4000);
     }
   });
 }
@@ -444,7 +463,7 @@ function ensureMap() {
 function toggleSat() {
   if (!map) return;
   satOn = !satOn; map.removeLayer(baseLayer);
-  baseLayer = makeBase(satOn ? 'sat' : (tileFallbackUsed ? 'alt' : 'osm')).addTo(map); baseLayer.bringToBack();
+  baseLayer = makeBase(satOn ? 'sat' : 'osm').addTo(map); baseLayer.bringToBack();
   if (!satOn) watchTileErrors(baseLayer);
   $('liveMap').classList.toggle('sat', satOn);
 }
@@ -571,7 +590,7 @@ async function cacheTiles() {
   const [s, w, n, e] = CAMPUS.bbox, urls = [];
   for (let z = 14; z <= 17; z++) {
     const x0 = lon2x(w, z), x1 = lon2x(e, z), y0 = lat2y(n, z), y1 = lat2y(s, z);
-    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) urls.push(TILE_OSM.replace('{z}', z).replace('{x}', x).replace('{y}', y));
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) urls.push((TILES[tileIdx] || TILES[0]).u.replace('{s}', 'a').replace('{z}', z).replace('{x}', x).replace('{y}', y));
   }
   const btn = $('tileBtn'), bar = $('tileBar'), st = $('tileStatus');
   btn.disabled = true;

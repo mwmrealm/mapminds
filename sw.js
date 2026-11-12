@@ -3,7 +3,7 @@
    - map tiles: cache-first, size-capped
    - live APIs (Overpass / routing): always network
    Bump VERSION whenever any precached file changes. */
-const VERSION = 'v10';
+const VERSION = 'v12';
 const SHELL = 'mm-shell-' + VERSION;
 const TILES = 'mm-tiles';
 const TILE_MAX = 900;
@@ -17,7 +17,7 @@ const SHELL_FILES = [
   './vendor/fa/css/all.min.css', './vendor/fa/webfonts/fa-solid-900.woff2', './vendor/fa/webfonts/fa-regular-400.woff2'
 ];
 
-const isTileHost = h => h === 'tile.openstreetmap.org' || h === 'server.arcgisonline.com' || h.endsWith('.basemaps.cartocdn.com');
+const isTileHost = h => h === 'tile.openstreetmap.org' || h === 'tile.openstreetmap.de' || h.endsWith('.tile.openstreetmap.fr') || h === 'server.arcgisonline.com' || h.endsWith('.basemaps.cartocdn.com') || h.endsWith('.tianditu.gov.cn') || h === 'api.maptiler.com' || h === 'tiles.stadiamaps.com';
 const isLiveHost = h => ['overpass-api.de', 'overpass.kumi.systems', 'overpass.private.coffee', 'overpass.nchc.org.tw', 'overpass.openstreetmap.fr', 'overpass.osm.jp', 'maps.mail.ru', 'routing.openstreetmap.de', 'valhalla1.openstreetmap.de'].includes(h);
 
 self.addEventListener('install', e => {
