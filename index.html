@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#2F80ED" />
+<meta name="description" content="MapMinds: live turn-by-turn walking navigation, search and offline maps for Zhengzhou University." />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="MapMinds" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" href="icons/favicon-32.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<title>MapMinds | ZZU Campus Navigator</title>
+<link rel="stylesheet" href="vendor/fa/css/all.min.css" />
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+<link rel="stylesheet" href="tailwind.css" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="max-w-md mx-auto">
+<div id="app">
+  <div class="blob a"></div><div class="blob b"></div><div class="blob c"></div>
+
+  <div id="screens" style="z-index:1;">
+
+    <!-- ========== SPLASH ========== -->
+    <div id="splash" class="screen active items-center justify-center px-6">
+      <div class="relative" style="width:150px;height:150px;">
+        <div class="ring"></div><div class="ring r2"></div>
+        <div class="logo-circle logo-splash" style="width:150px;height:150px;"><img src="logo.png" alt="MapMinds logo" /></div>
+      </div>
+      <h1 class="rise text-4xl font-extrabold text-navySoft tracking-tight mt-12" style="animation-delay:.5s">MapMinds</h1>
+      <p class="rise text-skyBlue font-semibold mt-1" style="animation-delay:.7s" data-i18n="tagline">Live Campus Navigator</p>
+      <p class="rise text-sm text-slate-500 mt-1" style="animation-delay:.85s" data-i18n="univ">Zhengzhou University</p>
+      <button onclick="showScreen('home')" class="rise primary-btn mt-14 px-10 py-3.5 rounded-full font-semibold" style="animation-delay:1s">
+        <i class="fa-solid fa-location-arrow mr-2"></i><span data-i18n="start">Start Exploring</span>
+      </button>
+      <div class="rise mt-8 flex gap-2" style="animation-delay:1.1s">
+        <button onclick="setLang('en')" class="langBtn download-btn px-3 py-1.5 rounded-full text-xs font-semibold" data-l="en">English</button>
+        <button onclick="setLang('zh')" class="langBtn download-btn px-3 py-1.5 rounded-full text-xs font-semibold" data-l="zh">中文</button>
+      </div>
+      <p class="text-xs text-slate-500 mt-6 text-center" data-i18n="offlineNote">Save the map once while online, then use it without internet</p>
+    </div>
+
+    <!-- ========== HOME ========== -->
+    <div id="home" class="screen">
+      <div class="px-5 pt-10 pb-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="logo-circle" style="width:46px;height:46px;"><img src="logo.png" alt="" /></div>
+          <div>
+            <h2 class="font-bold text-navySoft">MapMinds</h2>
+            <p class="text-xs text-slate-500" data-i18n="smartNav">Smart Campus Navigation</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="glass rounded-full p-1 flex text-xs font-bold">
+            <button class="langBtn px-2.5 py-1 rounded-full" data-l="en" onclick="setLang('en')">EN</button>
+            <button class="langBtn px-2.5 py-1 rounded-full" data-l="zh" onclick="setLang('zh')">中</button>
+          </div>
+          <button onclick="showScreen('download')" class="download-btn px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-1" aria-label="Offline maps">
+            <i class="fa-solid fa-download text-zzu"></i><span data-i18n="mapBtn">Map</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="offlinePill" class="px-5 mb-2" style="display:none;">
+        <div class="pill warn"><i class="fa-solid fa-circle-exclamation mr-1"></i><span data-i18n="offlineBadge">You are offline — saved maps and data still work</span></div>
+      </div>
+
+      <div class="px-5">
+        <div class="search-bar rounded-2xl px-4 py-3 flex items-center gap-3">
+          <i class="fa-solid fa-magnifying-glass text-skyBlue"></i>
+          <input id="searchInput" type="search" enterkeyhint="search" autocomplete="off" data-i18n-ph="searchPh" data-i18n-aria="searchAria" placeholder="Search building or landmark..."
+                 onkeydown="if(event.key==='Enter')doSearch(this.value)"
+                 class="bg-transparent outline-none flex-1 text-navySoft placeholder:text-slate-400 text-sm" />
+          <button onclick="doSearch(document.getElementById('searchInput').value)" class="primary-btn w-9 h-9 rounded-full flex items-center justify-center" data-i18n-aria="searchAria" aria-label="Search">
+            <i class="fa-solid fa-arrow-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-5 mt-5">
+        <p class="text-sm font-bold text-navySoft mb-3" data-i18n="quick">Quick Explore</p>
+        <div class="grid grid-cols-4 gap-2">
+          <button onclick="goCategory('food')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center mb-1"><i class="fa-solid fa-utensils text-zzu"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="food">Food</span>
+          </button>
+          <button onclick="goCategory('library')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center mb-1"><i class="fa-solid fa-book text-zzu"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="library">Library</span>
+          </button>
+          <button onclick="goCategory('gate')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center mb-1"><i class="fa-solid fa-door-open text-zzu"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="gates">Gates</span>
+          </button>
+          <button onclick="goCategory('bus')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center mb-1"><i class="fa-solid fa-train-subway text-zzu"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="transit">Transit</span>
+          </button>
+          <button onclick="goCategory('parking')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center mb-1"><i class="fa-solid fa-car text-zzu"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="parking">Parking</span>
+          </button>
+          <button onclick="goCategory('sports')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center mb-1"><i class="fa-solid fa-futbol text-zzu"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="sports">Sports</span>
+          </button>
+          <button onclick="goCategory('photo')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center mb-1"><i class="fa-solid fa-camera text-zzu"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="photo">Photo Spots</span>
+          </button>
+          <button onclick="openOverlay('sos')" class="white-card rounded-2xl py-3 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1" style="background:rgba(239,68,68,.15)"><i class="fa-solid fa-triangle-exclamation" style="color:#EF4444"></i></div>
+            <span class="text-xs font-semibold text-navySoft" data-i18n="sos">Emergency</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="savedBlock" class="px-5 mt-5" style="display:none;">
+        <p class="text-sm font-bold text-navySoft mb-2"><i class="fa-solid fa-star mr-1" style="color:#F59E0B"></i><span data-i18n="saved">Saved places</span></p>
+        <div id="savedList" class="space-y-2"></div>
+      </div>
+
+      <div class="px-5 mt-5 pb-8">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm font-bold text-navySoft" data-i18n="placesOnCampus">Places on campus</p>
+          <button onclick="showScreen('map')" class="text-xs text-skyBlue font-semibold" data-i18n="viewFull">View Full Map</button>
+        </div>
+        <div id="homeStatus" class="text-xs text-slate-500 mb-2" role="status"></div>
+        <div id="homePlaces" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- ========== MAP ========== -->
+    <div id="map" class="screen">
+      <div class="map-head px-5 pt-10 pb-3 flex items-center gap-3">
+        <button onclick="showScreen('home')" class="white-card w-10 h-10 rounded-full flex items-center justify-center" aria-label="Back"><i class="fa-solid fa-arrow-left text-navySoft"></i></button>
+        <div>
+          <h2 class="font-bold text-navySoft" data-i18n="mapTitle">Campus Map</h2>
+          <p class="text-xs text-slate-500" data-i18n="dragHint">Tap a pin for details • Pinch to zoom</p>
+        </div>
+      </div>
+      <div class="map-body flex-1 px-5 pb-3 min-h-0">
+        <div class="map-card white-card rounded-3xl w-full h-full p-2">
+          <div class="map-wrap relative w-full h-full rounded-2xl overflow-hidden">
+            <div id="liveMap"></div>
+
+            <div id="mapTop" class="map-ui" style="top:8px; left:8px; right:8px;">
+              <div class="search-bar rounded-full px-4 py-2 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-skyBlue text-sm"></i>
+                <input id="mapSearch" type="search" enterkeyhint="search" autocomplete="off" data-i18n-ph="whereTo" data-i18n-aria="searchAria" placeholder="Where do you want to go?"
+                       onkeydown="if(event.key==='Enter')doSearch(this.value)"
+                       class="bg-transparent outline-none flex-1 text-sm text-navySoft placeholder:text-slate-400" />
+              </div>
+              <div id="chipRow" class="flex gap-2 overflow-x-auto mt-2 pb-1"></div>
+            </div>
+
+            <div id="mapBtns" class="map-ui flex flex-col gap-2">
+              <button onclick="locateMe()" id="locBtn" class="glass round-btn" aria-label="My location"><i class="fa-solid fa-location-crosshairs text-skyBlue"></i></button>
+              <button onclick="toggleSat()" class="glass round-btn" aria-label="Satellite layer"><i class="fa-solid fa-layer-group text-navySoft"></i></button>
+              <button onclick="recenter()" class="glass round-btn" aria-label="Campus"><i class="fa-solid fa-school text-zzu"></i></button>
+              <button onclick="openQR()" class="glass round-btn" data-i18n-aria="scanQr" aria-label="Scan QR"><i class="fa-solid fa-qrcode text-navySoft"></i></button>
+            </div>
+
+            <!-- place card -->
+            <div id="placeCard" class="map-ui glass-sheet rounded-2xl p-3" style="left:8px; right:8px; bottom:8px; display:none;">
+              <div id="pcPhotos" class="pc-photos" style="display:none;"></div>
+              <div class="flex items-center gap-3">
+                <div id="pcIcon" class="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"></div>
+                <div class="flex-1 min-w-0">
+                  <p id="pcName" class="font-bold text-navySoft leading-tight"></p>
+                  <p id="pcName2" class="text-xs text-slate-500 leading-tight"></p>
+                  <p id="pcSub" class="text-xs text-slate-500 truncate"></p>
+                </div>
+                <button id="pcFav" onclick="toggleFav()" class="white-card w-8 h-8 rounded-full flex items-center justify-center shrink-0" aria-label="Save place"><i class="fa-regular fa-star text-navySoft text-sm"></i></button>
+                <button onclick="closeCard()" class="white-card w-8 h-8 rounded-full flex items-center justify-center shrink-0" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft text-sm"></i></button>
+              </div>
+              <p id="pcDesc" class="text-xs text-slate-600 mt-2 leading-snug" style="display:none;"></p>
+              <div id="pcApprox" class="pill warn mt-2" style="display:none;"><i class="fa-solid fa-circle-exclamation mr-1"></i><span data-i18n="approx">Approximate location</span></div>
+              <div class="flex gap-2 mt-3">
+                <button id="pcDir" onclick="startDirections()" class="primary-btn flex-1 py-2.5 rounded-full text-sm font-semibold"><i class="fa-solid fa-diamond-turn-right mr-1"></i><span data-i18n="directions">Directions</span></button>
+                <button onclick="openOverlay('external')" class="download-btn w-11 py-2.5 rounded-full text-sm font-semibold" data-i18n-aria="openIn" aria-label="Open in another app"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+              </div>
+            </div>
+
+            <!-- route preview -->
+            <div id="routePanel" class="map-ui glass-sheet rounded-2xl p-3" style="left:8px; right:8px; bottom:8px; display:none;">
+              <div class="flex items-start gap-2">
+                <div class="flex-1 min-w-0 text-xs leading-snug">
+                  <p class="truncate"><span class="text-slate-500" data-i18n="from">From</span>: <b id="rpFrom" class="text-navySoft"></b> <button class="text-skyBlue font-semibold ml-1" onclick="changeStart()" data-i18n="changeStart">Change</button></p>
+                  <p class="truncate mt-0.5"><span class="text-slate-500" data-i18n="to">To</span>: <b id="rpTo" class="text-navySoft"></b></p>
+                </div>
+                <button onclick="closeRoute()" class="white-card w-8 h-8 rounded-full flex items-center justify-center shrink-0" data-i18n-aria="closeRoute" aria-label="Close route"><i class="fa-solid fa-xmark text-navySoft text-sm"></i></button>
+              </div>
+              <div class="flex gap-2 mt-2">
+                <button id="rpModeFoot" onclick="setMode('foot')" class="chip"><i class="fa-solid fa-person-walking mr-1"></i><span data-i18n="walk">Walk</span></button>
+                <button id="rpModeBike" onclick="setMode('bike')" class="chip"><i class="fa-solid fa-person-biking mr-1"></i><span data-i18n="bike">Bike</span></button>
+                <button id="rpSim" onclick="simulateNav()" class="chip" style="display:none"><i class="fa-solid fa-play mr-1"></i><span data-i18n="demo">Simulate walk</span></button>
+              </div>
+              <div id="rpAlts" class="flex gap-2 overflow-x-auto mt-2" style="display:none;"></div>
+              <div class="mt-2 flex items-baseline gap-2 flex-wrap">
+                <span id="rpTime" class="text-2xl font-extrabold text-navySoft"></span>
+                <span id="rpMeta" class="text-xs text-slate-500"></span>
+              </div>
+              <div id="rpNote" class="pill warn mt-1" style="display:none;"></div>
+              <div class="flex gap-2 mt-3">
+                <button id="rpStart" onclick="startNav()" class="primary-btn flex-1 py-2.5 rounded-full text-sm font-semibold"><i class="fa-solid fa-location-arrow mr-1"></i><span data-i18n="navStart">Start</span></button>
+                <button onclick="showScreen('steps')" class="download-btn px-4 py-2.5 rounded-full text-sm font-semibold"><i class="fa-solid fa-list-ol mr-1"></i><span data-i18n="steps">Steps</span></button>
+              </div>
+            </div>
+
+            <!-- turn-by-turn banner -->
+            <div id="navTop" class="map-ui glass-sheet rounded-2xl p-3" style="top:8px; left:8px; right:8px; display:none;" aria-live="polite">
+              <div class="flex items-center gap-3">
+                <div id="ntIcon" class="w-14 h-14 rounded-2xl primary-btn flex items-center justify-center shrink-0 text-2xl"><i class="fa-solid fa-arrow-up"></i></div>
+                <div class="flex-1 min-w-0">
+                  <p id="ntDist" class="text-2xl font-extrabold text-navySoft leading-none"></p>
+                  <p id="ntText" class="text-sm font-semibold text-navySoft mt-1 leading-snug"></p>
+                  <p id="ntThen" class="text-xs text-slate-500 mt-0.5 truncate"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- navigation bottom bar -->
+            <div id="navBottom" class="map-ui glass-sheet rounded-2xl p-3" style="left:8px; right:8px; bottom:8px; display:none;">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 grid grid-cols-3 text-center">
+                  <div><p id="nbEta" class="font-extrabold text-navySoft text-lg leading-none">--:--</p><p class="text-[11px] text-slate-500 mt-1" data-i18n="navEta">Arrival</p></div>
+                  <div><p id="nbTime" class="font-extrabold text-navySoft text-lg leading-none">--</p><p class="text-[11px] text-slate-500 mt-1" data-i18n="min">min</p></div>
+                  <div><p id="nbDist" class="font-extrabold text-navySoft text-lg leading-none">--</p><p class="text-[11px] text-slate-500 mt-1" data-i18n="remaining">left</p></div>
+                </div>
+                <button id="nbVoice" onclick="toggleVoice()" class="white-card w-10 h-10 rounded-full flex items-center justify-center shrink-0" aria-label="Voice"><i class="fa-solid fa-volume-high text-navySoft"></i></button>
+                <button id="nbEnd" onclick="endNav()" class="shrink-0 px-4 h-10 rounded-full text-sm font-bold text-white" style="background:#EF4444;box-shadow:0 8px 20px rgba(239,68,68,.35)"><span data-i18n="navEnd">End</span></button>
+              </div>
+              <div id="nbStatus" class="text-xs text-center mt-2 pill warn" style="display:none;"></div>
+            </div>
+            <button id="nbRecenter" onclick="recenterNav()" class="map-ui primary-btn px-4 py-2 rounded-full text-xs font-bold" style="left:50%; transform:translateX(-50%); bottom:96px; display:none;"><i class="fa-solid fa-location-crosshairs mr-1"></i><span data-i18n="recenter">Recenter</span></button>
+
+            <!-- arrived -->
+            <div id="arrivedCard" class="map-ui glass-sheet rounded-2xl p-4 text-center" style="left:8px; right:8px; bottom:8px; display:none;">
+              <div class="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto text-2xl"><i class="fa-solid fa-flag-checkered"></i></div>
+              <p class="font-extrabold text-navySoft text-lg mt-2" data-i18n="arrivedTitle">You have arrived</p>
+              <p id="acText" class="text-sm text-slate-500"></p>
+              <button onclick="closeArrived()" class="primary-btn mt-3 px-8 py-2.5 rounded-full text-sm font-semibold" data-i18n="done">Done</button>
+            </div>
+
+            <!-- editor bar -->
+            <div id="editBar" class="map-ui glass-sheet rounded-2xl p-3" style="top:8px; left:8px; right:8px; display:none;">
+              <p class="text-xs font-bold text-navySoft"><i class="fa-solid fa-pen-ruler text-skyBlue mr-1"></i><span id="ebInfo"></span></p>
+              <div class="flex gap-2 mt-2 flex-wrap">
+                <button onclick="editorAdd()" class="chip"><i class="fa-solid fa-plus mr-1"></i><span data-i18n="addPlace">Add place</span></button>
+                <button onclick="editorExport()" class="chip"><i class="fa-solid fa-file-csv mr-1"></i><span data-i18n="exportCsv">Export CSV</span></button>
+                <button onclick="editorReset()" class="chip"><i class="fa-solid fa-rotate-left mr-1"></i><span data-i18n="resetEdits">Reset my edits</span></button>
+                <button onclick="editorExit()" class="chip on"><span data-i18n="exit">Exit</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== OFFLINE ========== -->
+    <div id="download" class="screen">
+      <div class="px-5 pt-10 pb-3 flex items-center gap-3">
+        <button onclick="showScreen('home')" class="white-card w-10 h-10 rounded-full flex items-center justify-center" aria-label="Back"><i class="fa-solid fa-arrow-left text-navySoft"></i></button>
+        <div>
+          <h2 class="font-bold text-navySoft" data-i18n="offlineTitle">Offline Maps</h2>
+          <p class="text-xs text-slate-500" data-i18n="offlineSub">Save the live map for use without internet</p>
+        </div>
+      </div>
+
+      <div class="flex-1 px-5 space-y-4 pb-8">
+        <div class="white-card rounded-2xl p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-skyLight flex items-center justify-center"><i class="fa-solid fa-map-location-dot text-zzu text-xl"></i></div>
+            <div class="flex-1">
+              <p class="font-bold text-navySoft" data-i18n="areaTitle">Offline map area</p>
+              <p class="text-xs text-slate-500" data-i18n="areaSub">Save campus map tiles to use without internet</p>
+            </div>
+          </div>
+          <div class="mt-3 h-2 bg-skyLight rounded-full overflow-hidden"><div id="tileBar" class="progress-bar h-full rounded-full" style="width:0%"></div></div>
+          <div class="flex items-center justify-between mt-3 gap-2">
+            <p id="tileStatus" class="text-xs text-slate-500" role="status"></p>
+            <button id="tileBtn" onclick="cacheTiles()" class="primary-btn px-4 py-2 rounded-full text-xs font-semibold shrink-0"><i class="fa-solid fa-download mr-1"></i><span data-i18n="cacheBtn">Save for offline</span></button>
+          </div>
+        </div>
+
+        <div class="white-card rounded-2xl p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-skyLight flex items-center justify-center"><i class="fa-solid fa-database text-zzu text-xl"></i></div>
+            <div class="flex-1">
+              <p class="font-bold text-navySoft" data-i18n="dataTitle">Campus places data</p>
+              <p id="dataSub" class="text-xs text-slate-500"></p>
+            </div>
+            <button onclick="loadPlaces(true)" class="download-btn px-3 py-2 rounded-full text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i><span data-i18n="refresh">Refresh</span></button>
+          </div>
+          <details class="mt-3 text-xs text-slate-500"><summary class="cursor-pointer" data-i18n="dataDetails">Technical details</summary><pre id="dataLog" class="whitespace-pre-wrap mt-2" style="font-family:inherit;"></pre></details>
+        </div>
+
+        <div class="white-card rounded-2xl p-3 text-xs text-slate-500 flex gap-2">
+          <i class="fa-solid fa-circle-info text-skyBlue mt-0.5"></i><p data-i18n="imgDisclaimer">The illustrated maps below are an unofficial overview, not to scale. Use the live map for navigation.</p>
+        </div>
+
+        <div class="white-card rounded-3xl p-3">
+          <div class="rounded-2xl overflow-hidden relative bg-skyLight" style="height:170px;" onclick="openViewer('zh')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openViewer('zh')">
+            <img src="map-zh.jpg" loading="lazy" alt="Illustrated campus overview (Chinese)" class="w-full h-full object-cover object-top" onerror="this.parentElement.parentElement.style.display='none'" />
+            <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full bg-zzu text-white">中文</span>
+          </div>
+          <div class="flex items-center justify-between mt-3 px-1">
+            <div>
+              <p class="font-bold text-navySoft text-sm" data-i18n="mapZhTitle">Illustrated overview (Chinese)</p>
+              <p class="text-xs text-slate-500" data-i18n="mapZhSub"></p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="openViewer('zh')" class="download-btn px-3 py-2 rounded-full text-xs font-semibold"><i class="fa-solid fa-eye mr-1"></i><span data-i18n="view">View</span></button>
+              <a href="map-zh.jpg" download="ZZU-Overview-ZH.jpg" class="primary-btn px-3 py-2 rounded-full text-xs font-semibold" aria-label="Download"><i class="fa-solid fa-download"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="white-card rounded-3xl p-3">
+          <div class="rounded-2xl overflow-hidden relative bg-skyLight" style="height:170px;" onclick="openViewer('en')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openViewer('en')">
+            <img src="map-en.jpg" loading="lazy" alt="Illustrated campus overview (English)" class="w-full h-full object-cover object-top" onerror="this.parentElement.parentElement.style.display='none'" />
+            <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full bg-skyBlue text-white">English</span>
+          </div>
+          <div class="flex items-center justify-between mt-3 px-1">
+            <div>
+              <p class="font-bold text-navySoft text-sm" data-i18n="mapEnTitle">Illustrated overview (English)</p>
+              <p class="text-xs text-slate-500" data-i18n="mapEnSub"></p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="openViewer('en')" class="download-btn px-3 py-2 rounded-full text-xs font-semibold"><i class="fa-solid fa-eye mr-1"></i><span data-i18n="view">View</span></button>
+              <a href="map-en.jpg" download="ZZU-Overview-EN.jpg" class="primary-btn px-3 py-2 rounded-full text-xs font-semibold" aria-label="Download"><i class="fa-solid fa-download"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== ROUTE STEPS ========== -->
+    <div id="steps" class="screen">
+      <div class="px-5 pt-10 pb-3 flex items-center gap-3">
+        <button onclick="showScreen('map')" class="white-card w-10 h-10 rounded-full flex items-center justify-center" aria-label="Back"><i class="fa-solid fa-arrow-left text-navySoft"></i></button>
+        <div class="min-w-0">
+          <h2 class="font-bold text-navySoft" data-i18n="navSteps">Navigation Steps</h2>
+          <p id="stepsSub" class="text-xs text-slate-500 truncate"></p>
+        </div>
+      </div>
+      <div id="stepsList" class="flex-1 px-5 space-y-3 pb-8"></div>
+    </div>
+
+    <!-- ========== SETTINGS ========== -->
+    <div id="settings" class="screen">
+      <div class="px-5 pt-10 pb-3 flex items-center gap-3">
+        <button onclick="showScreen('home')" class="white-card w-10 h-10 rounded-full flex items-center justify-center" aria-label="Back"><i class="fa-solid fa-arrow-left text-navySoft"></i></button>
+        <div>
+          <h2 class="font-bold text-navySoft" data-i18n="settings">Settings</h2>
+          <p class="text-xs text-slate-500" data-i18n="settingsSub">Personalize your experience</p>
+        </div>
+      </div>
+      <div class="flex-1 px-5 space-y-4 pb-8">
+        <div class="white-card rounded-2xl p-4">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2" data-i18n="appearance">Appearance</p>
+          <div class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i id="themeIcon" class="fa-solid fa-sun text-zzu"></i></div>
+              <div>
+                <p class="text-sm font-semibold text-navySoft" id="themeLabel">Light Mode</p>
+                <p class="text-xs text-slate-500" data-i18n="themeHint">Switch between light and dark</p>
+              </div>
+            </div>
+            <div id="themeToggle" class="toggle" role="switch" tabindex="0" aria-checked="false" aria-label="Dark mode" onclick="toggleTheme()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTheme()}"></div>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-language text-zzu"></i></div>
+              <p class="text-sm font-semibold text-navySoft" data-i18n="language">Language</p>
+            </div>
+            <div class="glass rounded-full p-1 flex text-xs font-bold">
+              <button class="langBtn px-3 py-1 rounded-full" data-l="en" onclick="setLang('en')">English</button>
+              <button class="langBtn px-3 py-1 rounded-full" data-l="zh" onclick="setLang('zh')">中文</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="white-card rounded-2xl p-4">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2" data-i18n="locationSec">Location</p>
+          <div class="flex items-center justify-between py-2 gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center shrink-0"><i class="fa-solid fa-satellite-dish text-zzu"></i></div>
+              <div>
+                <p class="text-sm font-semibold text-navySoft" data-i18n="gpsFix">Fix shifted GPS dot</p>
+                <p class="text-xs text-slate-500" data-i18n="gpsFixHint">Turn on if your blue dot appears ~500 m away from where you stand (some Chinese in-app browsers).</p>
+              </div>
+            </div>
+            <div id="gcjToggle" class="toggle" role="switch" tabindex="0" aria-checked="false" aria-label="GPS correction" onclick="toggleGcj()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleGcj()}"></div>
+          </div>
+          <div class="flex items-center justify-between py-2 gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center shrink-0"><i class="fa-solid fa-volume-high text-zzu"></i></div>
+              <div>
+                <p class="text-sm font-semibold text-navySoft" data-i18n="voice">Voice guidance</p>
+                <p class="text-xs text-slate-500" data-i18n="voiceHint">Speak turn-by-turn directions while navigating</p>
+              </div>
+            </div>
+            <div id="voiceToggle" class="toggle" role="switch" tabindex="0" aria-checked="false" aria-label="Voice guidance" onclick="toggleVoice()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleVoice()}"></div>
+          </div>
+        </div>
+
+        <div class="white-card rounded-2xl p-2">
+          <button id="installRow" onclick="installApp()" class="w-full flex items-center justify-between p-3" style="display:none;">
+            <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-mobile-screen text-zzu"></i></div><p class="text-sm font-semibold text-navySoft" data-i18n="installApp">Install app</p></div>
+            <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+          </button>
+          <button onclick="openOverlay('howto')" class="w-full flex items-center justify-between p-3">
+            <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-circle-question text-zzu"></i></div><p class="text-sm font-semibold text-navySoft" data-i18n="howto">How to Use</p></div>
+            <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+          </button>
+          <button onclick="openOverlay('about')" class="w-full flex items-center justify-between p-3">
+            <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-circle-info text-zzu"></i></div><p class="text-sm font-semibold text-navySoft" data-i18n="about">About Us</p></div>
+            <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+          </button>
+          <button id="editorRow" onclick="editorEnter()" class="w-full flex items-center justify-between p-3" style="display:none;">
+            <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-pen-ruler text-zzu"></i></div>
+              <div class="text-left"><p class="text-sm font-semibold text-navySoft" data-i18n="editor">Map editor</p><p class="text-xs text-slate-500" data-i18n="editorSub">Drag pins to their exact spot, then export</p></div></div>
+            <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+          </button>
+          <button onclick="clearLocalData()" class="w-full flex items-center justify-between p-3">
+            <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-trash-can text-zzu"></i></div>
+              <div class="text-left"><p class="text-sm font-semibold text-navySoft" data-i18n="clearData">Reset saved data</p><p class="text-xs text-slate-500" data-i18n="clearSub">Clears favourites, cached places and offline tiles</p></div></div>
+            <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+          </button>
+        </div>
+        <p id="verTap" class="text-center text-xs text-slate-500 select-none">MapMinds v4.0 · © OpenStreetMap contributors</p>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <button id="botFab" aria-label="Campus guide"><i class="fa-solid fa-robot"></i></button>
+
+  <nav id="bottomNav" class="glass-nav flex justify-around py-3" style="display:none; z-index:30;" aria-label="Main">
+    <button data-nav="home" onclick="showScreen('home')" class="bottom-nav-btn flex flex-col items-center gap-1"><i class="fa-solid fa-house"></i><span class="text-xs font-semibold" data-i18n="navHome">Home</span></button>
+    <button data-nav="map" onclick="showScreen('map')" class="bottom-nav-btn flex flex-col items-center gap-1"><i class="fa-solid fa-map"></i><span class="text-xs font-semibold" data-i18n="navMap">Map</span></button>
+    <button data-nav="download" onclick="showScreen('download')" class="bottom-nav-btn flex flex-col items-center gap-1"><i class="fa-solid fa-download"></i><span class="text-xs font-semibold" data-i18n="navOffline">Offline</span></button>
+    <button data-nav="steps" onclick="showScreen('steps')" class="bottom-nav-btn flex flex-col items-center gap-1"><i class="fa-solid fa-route"></i><span class="text-xs font-semibold" data-i18n="navRoute">Route</span></button>
+    <button data-nav="settings" onclick="showScreen('settings')" class="bottom-nav-btn flex flex-col items-center gap-1"><i class="fa-solid fa-gear"></i><span class="text-xs font-semibold" data-i18n="navSettings">Settings</span></button>
+  </nav>
+</div>
+
+<!-- ========== OVERLAY: GUIDE CHAT ========== -->
+<div id="chat" class="overlay" role="dialog" aria-modal="true" aria-labelledby="botNameLbl">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('chat')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet flex flex-col pointer-events-auto" style="height:78%;">
+      <div class="flex items-center justify-between px-5 pt-4 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full primary-btn flex items-center justify-center"><i class="fa-solid fa-robot"></i></div>
+          <div>
+            <p id="botNameLbl" class="font-bold text-navySoft" data-i18n="botName">MapMinds Guide</p>
+            <p class="text-xs text-emerald-600 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span><span data-i18n="online">Ready</span></p>
+          </div>
+        </div>
+        <button onclick="closeOverlay('chat')" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      </div>
+      <div id="chatLog" class="flex-1 overflow-y-auto px-5 flex flex-col gap-2 pb-2" aria-live="polite"></div>
+      <div id="chips" class="px-5 py-2 flex gap-2 overflow-x-auto"></div>
+      <div class="px-5 pb-5 pt-1">
+        <div class="search-bar rounded-full px-4 py-2 flex items-center gap-2">
+          <input id="chatInput" type="text" autocomplete="off" data-i18n-ph="askPh" placeholder="Ask me about the campus..." class="bg-transparent outline-none flex-1 text-sm text-navySoft placeholder:text-slate-400" onkeydown="if(event.key==='Enter')sendChat()" />
+          <button onclick="sendChat()" class="primary-btn w-9 h-9 rounded-full flex items-center justify-center" aria-label="Send"><i class="fa-solid fa-paper-plane text-sm"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: SEARCH RESULTS ========== -->
+<div id="results" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('results')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet pointer-events-auto flex flex-col" style="max-height:75%;">
+      <div class="flex items-center justify-between px-5 pt-4 pb-2">
+        <h3 class="font-bold text-lg text-navySoft" data-i18n="resultsTitle">Search results</h3>
+        <button onclick="closeOverlay('results')" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      </div>
+      <div id="resultsList" class="overflow-y-auto px-5 pb-6 space-y-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: PHOTO VIEWER ========== -->
+<div id="photoView" class="overlay" role="dialog" aria-modal="true" style="background:rgba(8,16,30,.88);">
+  <div class="absolute inset-0" onclick="closeOverlay('photoView')"></div>
+  <div class="pv-wrap">
+    <img id="pvImg" alt="" class="pv-img" />
+    <p id="pvCap" class="pv-cap"></p><p id="pvCount" class="pv-count"></p>
+  </div>
+  <button id="pvPrev" onclick="photoStep(-1)" class="pv-nav" style="left:10px" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+  <button id="pvNext" onclick="photoStep(1)" class="pv-nav" style="right:10px" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+  <button onclick="closeOverlay('photoView')" class="pv-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+</div>
+
+<!-- ========== OVERLAY: OPEN IN OTHER MAP APP ========== -->
+<div id="external" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('external')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet p-5 pointer-events-auto">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg text-navySoft" data-i18n="openIn">Open in…</h3>
+        <button onclick="closeOverlay('external')" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      </div>
+      <div class="space-y-2">
+        <a id="extAmap" target="_blank" rel="noopener" class="white-card rounded-2xl p-3 flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-location-dot text-zzu"></i></div><p class="font-semibold text-sm text-navySoft flex-1">高德地图 Amap</p><i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i></a>
+        <a id="extBaidu" target="_blank" rel="noopener" class="white-card rounded-2xl p-3 flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-location-dot text-zzu"></i></div><p class="font-semibold text-sm text-navySoft flex-1">百度地图 Baidu Maps</p><i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i></a>
+        <a id="extGoogle" target="_blank" rel="noopener" class="white-card rounded-2xl p-3 flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-location-dot text-zzu"></i></div><p class="font-semibold text-sm text-navySoft flex-1">Google Maps</p><i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i></a>
+        <button onclick="sharePlace()" class="white-card rounded-2xl p-3 flex items-center gap-3 w-full text-left"><div class="w-10 h-10 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-share-nodes text-zzu"></i></div><p class="font-semibold text-sm text-navySoft flex-1" data-i18n="share">Share this place</p></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: EMERGENCY ========== -->
+<div id="sos" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('sos')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet p-5 pointer-events-auto">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg text-navySoft" data-i18n="sosTitle">Emergency numbers (China)</h3>
+        <button onclick="closeOverlay('sos')" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      </div>
+      <div class="space-y-2">
+        <a href="tel:110" class="white-card rounded-2xl p-3 flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background:#2F80ED"><i class="fa-solid fa-shield-halved"></i></div><div class="flex-1"><p class="font-bold text-navySoft">110</p><p class="text-xs text-slate-500" data-i18n="police">Police</p></div><i class="fa-solid fa-phone text-skyBlue"></i></a>
+        <a href="tel:120" class="white-card rounded-2xl p-3 flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background:#EF4444"><i class="fa-solid fa-truck-medical"></i></div><div class="flex-1"><p class="font-bold text-navySoft">120</p><p class="text-xs text-slate-500" data-i18n="ambulance">Ambulance</p></div><i class="fa-solid fa-phone text-skyBlue"></i></a>
+        <a href="tel:119" class="white-card rounded-2xl p-3 flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background:#F59E0B"><i class="fa-solid fa-fire-extinguisher"></i></div><div class="flex-1"><p class="font-bold text-navySoft">119</p><p class="text-xs text-slate-500" data-i18n="fire">Fire</p></div><i class="fa-solid fa-phone text-skyBlue"></i></a>
+      </div>
+      <p class="text-xs text-slate-500 mt-3" data-i18n="sosNote">Tell the operator you are at Zhengzhou University Main Campus, Kexue Avenue 100 (科学大道100号).</p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: MAP IMAGE VIEWER ========== -->
+<div id="viewer" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" style="background:rgba(10,20,40,.6)" onclick="closeOverlay('viewer')"></div>
+  <div class="overlay-inner flex flex-col p-4 pointer-events-none">
+    <div class="glass-sheet rounded-3xl flex flex-col flex-1 min-h-0 pointer-events-auto overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3">
+        <p id="viewerTitle" class="font-bold text-navySoft text-sm"></p>
+        <div class="flex gap-2">
+          <button onclick="zoomViewer(-20)" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Zoom out"><i class="fa-solid fa-minus text-navySoft text-sm"></i></button>
+          <button onclick="zoomViewer(20)" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Zoom in"><i class="fa-solid fa-plus text-navySoft text-sm"></i></button>
+          <a id="viewerDl" href="#" download class="primary-btn w-9 h-9 rounded-full flex items-center justify-center" aria-label="Download"><i class="fa-solid fa-download text-sm"></i></a>
+          <button onclick="closeOverlay('viewer')" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+        </div>
+      </div>
+      <div class="flex-1 overflow-auto px-2 pb-2"><img id="viewerImg" src="" alt="Illustrated campus overview" style="width:100%;max-width:none;border-radius:16px;" /></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: HOW TO USE ========== -->
+<div id="howto" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('howto')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet p-5 pointer-events-auto" style="max-height:85%; overflow-y:auto;">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg text-navySoft" data-i18n="howto">How to Use</h3>
+        <button onclick="closeOverlay('howto')" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      </div>
+      <div class="space-y-2">
+        <div class="acc white-card rounded-2xl open">
+          <button class="w-full flex items-center justify-between p-3" onclick="this.parentElement.classList.toggle('open')"><span class="text-sm font-semibold text-navySoft text-left"><i class="fa-solid fa-magnifying-glass text-skyBlue mr-2"></i><span data-i18n="h1t"></span></span><i class="fa-solid fa-chevron-down text-xs text-slate-400 acc-chev"></i></button>
+          <div class="acc-body"><p class="px-4 pb-3 text-xs text-slate-500" data-i18n="h1b"></p></div>
+        </div>
+        <div class="acc white-card rounded-2xl">
+          <button class="w-full flex items-center justify-between p-3" onclick="this.parentElement.classList.toggle('open')"><span class="text-sm font-semibold text-navySoft text-left"><i class="fa-solid fa-route text-skyBlue mr-2"></i><span data-i18n="h2t"></span></span><i class="fa-solid fa-chevron-down text-xs text-slate-400 acc-chev"></i></button>
+          <div class="acc-body"><p class="px-4 pb-3 text-xs text-slate-500" data-i18n="h2b"></p></div>
+        </div>
+        <div class="acc white-card rounded-2xl">
+          <button class="w-full flex items-center justify-between p-3" onclick="this.parentElement.classList.toggle('open')"><span class="text-sm font-semibold text-navySoft text-left"><i class="fa-solid fa-download text-skyBlue mr-2"></i><span data-i18n="h3t"></span></span><i class="fa-solid fa-chevron-down text-xs text-slate-400 acc-chev"></i></button>
+          <div class="acc-body"><p class="px-4 pb-3 text-xs text-slate-500" data-i18n="h3b"></p></div>
+        </div>
+        <div class="acc white-card rounded-2xl">
+          <button class="w-full flex items-center justify-between p-3" onclick="this.parentElement.classList.toggle('open')"><span class="text-sm font-semibold text-navySoft text-left"><i class="fa-solid fa-star text-skyBlue mr-2"></i><span data-i18n="h6t"></span></span><i class="fa-solid fa-chevron-down text-xs text-slate-400 acc-chev"></i></button>
+          <div class="acc-body"><p class="px-4 pb-3 text-xs text-slate-500" data-i18n="h6b"></p></div>
+        </div>
+        <div class="acc white-card rounded-2xl">
+          <button class="w-full flex items-center justify-between p-3" onclick="this.parentElement.classList.toggle('open')"><span class="text-sm font-semibold text-navySoft text-left"><i class="fa-solid fa-robot text-skyBlue mr-2"></i><span data-i18n="h4t"></span></span><i class="fa-solid fa-chevron-down text-xs text-slate-400 acc-chev"></i></button>
+          <div class="acc-body"><p class="px-4 pb-3 text-xs text-slate-500" data-i18n="h4b"></p></div>
+        </div>
+        <div class="acc white-card rounded-2xl">
+          <button class="w-full flex items-center justify-between p-3" onclick="this.parentElement.classList.toggle('open')"><span class="text-sm font-semibold text-navySoft text-left"><i class="fa-solid fa-gear text-skyBlue mr-2"></i><span data-i18n="h5t"></span></span><i class="fa-solid fa-chevron-down text-xs text-slate-400 acc-chev"></i></button>
+          <div class="acc-body"><p class="px-4 pb-3 text-xs text-slate-500" data-i18n="h5b"></p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: ABOUT ========== -->
+<div id="about" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('about')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet p-6 pointer-events-auto text-center" style="max-height:85%; overflow-y:auto;">
+      <button onclick="closeOverlay('about')" class="white-card w-9 h-9 rounded-full flex items-center justify-center absolute right-4 top-4" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      <div class="logo-circle mx-auto mb-3" style="width:88px;height:88px;"><img src="logo.png" alt="" /></div>
+      <h3 class="font-extrabold text-xl text-navySoft">MapMinds</h3>
+      <p class="text-skyBlue text-sm font-semibold" data-i18n="tagline"></p>
+      <p class="text-sm text-slate-500 mt-4 leading-relaxed" data-i18n="aboutText"></p>
+      <div class="grid grid-cols-3 gap-2 mt-5">
+        <div class="white-card rounded-2xl py-3"><i class="fa-solid fa-map-location-dot text-zzu"></i><p class="text-xs font-semibold text-navySoft mt-1" data-i18n="ab1"></p></div>
+        <div class="white-card rounded-2xl py-3"><i class="fa-solid fa-wifi text-zzu"></i><p class="text-xs font-semibold text-navySoft mt-1" data-i18n="ab2"></p></div>
+        <div class="white-card rounded-2xl py-3"><i class="fa-solid fa-robot text-zzu"></i><p class="text-xs font-semibold text-navySoft mt-1" data-i18n="ab3"></p></div>
+      </div>
+      <p class="text-xs text-slate-500 mt-5" data-i18n="credits">Map data © OpenStreetMap contributors · Routing by OSM community servers · Unofficial student project</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== OVERLAY: CHOOSE START POINT ========== -->
+<div id="startPick" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('startPick')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet pointer-events-auto flex flex-col" style="max-height:80%;">
+      <div class="flex items-center justify-between px-5 pt-4 pb-2">
+        <h3 class="font-bold text-lg text-navySoft" data-i18n="startFrom">Start from…</h3>
+        <button onclick="closeOverlay('startPick')" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      </div>
+      <div class="px-5 pb-2"><div class="search-bar rounded-full px-4 py-2 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-skyBlue text-sm"></i>
+        <input id="startQ" type="search" autocomplete="off" data-i18n-ph="searchPh" placeholder="Search…" class="bg-transparent outline-none flex-1 text-sm text-navySoft placeholder:text-slate-400" /></div></div>
+      <div id="startList" class="overflow-y-auto px-5 pb-6 space-y-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: QR SCANNER ========== -->
+<div id="qr" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" style="background:rgba(10,20,40,.7)" onclick="closeQR()"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet p-5 pointer-events-auto">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg text-navySoft" data-i18n="qrTitle">Scan QR code</h3>
+        <button onclick="closeQR()" class="white-card w-9 h-9 rounded-full flex items-center justify-center" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft"></i></button>
+      </div>
+      <div class="rounded-2xl overflow-hidden bg-black relative" style="aspect-ratio:1/1;">
+        <video id="qrVideo" playsinline muted class="w-full h-full object-cover"></video>
+        <div class="absolute inset-0 pointer-events-none flex items-center justify-center"><div style="width:62%;height:62%;border:3px solid rgba(255,255,255,.85);border-radius:20px;box-shadow:0 0 0 999px rgba(0,0,0,.25)"></div></div>
+      </div>
+      <p id="qrMsg" class="text-xs text-slate-500 mt-3 text-center" role="status"></p>
+      <div class="flex gap-2 mt-3">
+        <input id="qrManual" type="text" autocomplete="off" data-i18n-ph="qrManualPh" placeholder="or type a code" class="search-bar rounded-full px-4 py-2 flex-1 text-sm text-navySoft outline-none" onkeydown="if(event.key==='Enter')submitQRManual()" />
+        <button onclick="submitQRManual()" class="primary-btn px-5 rounded-full text-sm font-semibold" data-i18n="qrGo">Go</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERLAY: EDITOR FORM ========== -->
+<div id="editForm" class="overlay" role="dialog" aria-modal="true">
+  <div class="glass-overlay absolute inset-0" onclick="closeOverlay('editForm')"></div>
+  <div class="overlay-inner pointer-events-none">
+    <div class="sheet glass-sheet p-5 pointer-events-auto">
+      <h3 class="font-bold text-lg text-navySoft mb-3" id="efTitle"></h3>
+      <div class="space-y-2">
+        <input id="efZh" class="search-bar rounded-xl px-4 py-3 w-full text-sm text-navySoft outline-none" data-i18n-ph="nameZh" placeholder="Chinese name" />
+        <input id="efEn" class="search-bar rounded-xl px-4 py-3 w-full text-sm text-navySoft outline-none" data-i18n-ph="nameEn" placeholder="English name" />
+        <select id="efCat" class="search-bar rounded-xl px-4 py-3 w-full text-sm text-navySoft outline-none"></select>
+        <div class="flex gap-2 flex-wrap pt-1">
+          <button id="efGps" onclick="editorUseGps()" class="chip"><i class="fa-solid fa-location-crosshairs mr-1"></i><span data-i18n="useGps">Use my GPS position</span></button>
+          <button id="efShift" onclick="editorShiftAll()" class="chip"><i class="fa-solid fa-up-down-left-right mr-1"></i><span data-i18n="shiftAll">Shift all places the same way</span></button>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button id="efDelete" onclick="editorDelete()" class="download-btn px-4 py-2.5 rounded-full text-sm font-semibold" style="color:#EF4444"><span data-i18n="deletePlace">Delete</span></button>
+        <button onclick="closeOverlay('editForm')" class="download-btn flex-1 py-2.5 rounded-full text-sm font-semibold" data-i18n="cancel">Cancel</button>
+        <button onclick="editorSave()" class="primary-btn flex-1 py-2.5 rounded-full text-sm font-semibold" data-i18n="save">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="glass fixed left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs font-semibold text-navySoft" style="top:calc(env(safe-area-inset-top,0px) + 14px); z-index:90; display:none; max-width:92%; text-align:center;" role="status"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/pinyin-pro.js"></script>
+<script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="nav.js"></script>
+<script src="qr.js"></script>
+<script src="editor.js"></script>
+<script>MM.boot();</script>
+</body>
+</html>

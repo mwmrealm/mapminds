@@ -1,0 +1,19 @@
+id,code,zh,en,category,lat,lon,crs,conf,aliases
+gate_s,,南门,South Gate,gate,34.80910,113.53410,wgs84,approx,南门;主门;Main Gate;South Gate;Kexue Avenue Gate
+gate_e,,东门,East Gate,gate,34.81700,113.54140,gcj02,approx,东门;East Gate
+gate_n,,北门,North Gate,gate,34.82770,113.53480,wgs84,approx,北门;North Gate;Lianhua Street Gate
+library,,图书馆,Library,library,34.81850,113.53450,gcj02,approx,图书馆;Main Library;总馆
+clock_tower,,钟楼,Clock Tower,photo,34.81810,113.53110,gcj02,approx,钟楼;地标;Landmark;Bell Tower
+admin,,综合管理中心,Administration Building,building,34.81600,113.53300,gcj02,approx,行政楼;综合管理中心;Admin;Admin Office
+core_s,,南核心教学区,South Core Teaching Area,building,34.81100,113.53200,gcj02,approx,南核;南核心;South Core
+core_n,,北核心教学区,North Core Teaching Area,building,34.82200,113.53200,gcj02,approx,北核;北核心;North Core
+sie,17,国际教育学院,School of International Education,building,34.81374,113.52590,gcj02,approx,国际教育学院;SIE;柳园17号楼;Building 17;Liuyuan 17;国教院
+stadium,,本源体育场,Ben Yuan Stadium,sports,34.82300,113.53600,gcj02,approx,中体;体育场;本源体育场;Stadium;操场
+canteen_jy1,,柳园聚英园,Juyingyuan Canteen (Liuyuan),food,34.81410,113.52900,gcj02,approx,聚英园;柳园餐厅;Halal Canteen;清真食堂;Muslim Canteen
+canteen_hy1,,荷园一餐厅,Heyuan No.1 Canteen,food,34.82030,113.53000,gcj02,approx,荷园一餐厅;荷园;Heyuan
+canteen_ly2,,柳园风华园,Fenghuayuan Canteen (Liuyuan),food,34.81650,113.52850,gcj02,approx,风华园;Fenghuayuan
+canteen_jy2,,菊园秋穗园,Qiusuiyuan Canteen (Juyuan),food,34.81200,113.53100,gcj02,approx,秋穗园;菊园;Qiusuiyuan
+canteen_sy,,松园竞舸园,Jinggeyuan Canteen (Songyuan),food,34.81900,113.53500,gcj02,approx,竞舸园;松园;Jinggeyuan
+metro_s,,郑州大学站（地铁1号线）,Zhengzhou University Metro Station (Line 1),bus,34.80870,113.53520,wgs84,high,地铁;郑州大学站;Metro;Subway;Line 1;South Gate Metro
+metro_e,,郑大科技园站（地铁1号线）,ZZU Sci-Tech Park Metro Station (Line 1),bus,34.81800,113.53560,wgs84,high,地铁;郑大科技园站;Metro;Subway;Line 1;East Gate Metro
+metro_n,,河南工业大学站（地铁1号线）,Henan University of Technology Metro Station (Line 1),bus,34.82800,113.53600,wgs84,high,地铁;河南工业大学站;Metro;Subway;Line 1;North Gate Metro

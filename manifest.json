@@ -1,0 +1,17 @@
+{
+  "name": "MapMinds | ZZU Campus Navigator",
+  "short_name": "MapMinds",
+  "description": "Live walking navigation, offline maps and search for Zhengzhou University.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EAF4FF",
+  "theme_color": "#2F80ED",
+  "lang": "en",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

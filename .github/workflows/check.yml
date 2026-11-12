@@ -1,0 +1,10 @@
+name: check-data
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/validate.py
+      - name: JS syntax
+        run: for f in app.js nav.js qr.js editor.js admin.js i18n.js i18n-extra.js sw.js config.js; do node --check $f; done

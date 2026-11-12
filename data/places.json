@@ -1,0 +1,347 @@
+{
+ "version": 1,
+ "places": [
+  {
+   "id": "gate_s",
+   "zh": "南门",
+   "en": "South Gate",
+   "cat": "gate",
+   "lat": 34.8091,
+   "lon": 113.5341,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "南门",
+    "主门",
+    "Main Gate",
+    "South Gate",
+    "Kexue Avenue Gate"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "gate_e",
+   "zh": "东门",
+   "en": "East Gate",
+   "cat": "gate",
+   "lat": 34.818058,
+   "lon": 113.535247,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "东门",
+    "East Gate"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "gate_n",
+   "zh": "北门",
+   "en": "North Gate",
+   "cat": "gate",
+   "lat": 34.8277,
+   "lon": 113.5348,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "北门",
+    "North Gate",
+    "Lianhua Street Gate"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "library",
+   "zh": "图书馆",
+   "en": "Library",
+   "cat": "library",
+   "lat": 34.81954,
+   "lon": 113.528324,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "图书馆",
+    "Main Library",
+    "总馆"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "clock_tower",
+   "zh": "钟楼",
+   "en": "Clock Tower",
+   "cat": "photo",
+   "lat": 34.819131,
+   "lon": 113.524912,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "钟楼",
+    "地标",
+    "Landmark",
+    "Bell Tower"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "admin",
+   "zh": "综合管理中心",
+   "en": "Administration Building",
+   "cat": "building",
+   "lat": 34.817038,
+   "lon": 113.526819,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "行政楼",
+    "综合管理中心",
+    "Admin",
+    "Admin Office"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "core_s",
+   "zh": "南核心教学区",
+   "en": "South Core Teaching Area",
+   "cat": "building",
+   "lat": 34.812041,
+   "lon": 113.525816,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "南核",
+    "南核心",
+    "South Core"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "core_n",
+   "zh": "北核心教学区",
+   "en": "North Core Teaching Area",
+   "cat": "building",
+   "lat": 34.82303,
+   "lon": 113.525815,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "北核",
+    "北核心",
+    "North Core"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "sie",
+   "zh": "国际教育学院",
+   "en": "School of International Education",
+   "cat": "building",
+   "lat": 34.814762,
+   "lon": 113.519694,
+   "conf": "approx",
+   "code": "17",
+   "aliases": [
+    "国际教育学院",
+    "SIE",
+    "柳园17号楼",
+    "Building 17",
+    "Liuyuan 17",
+    "国教院"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "stadium",
+   "zh": "本源体育场",
+   "en": "Ben Yuan Stadium",
+   "cat": "sports",
+   "lat": 34.824039,
+   "lon": 113.529828,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "中体",
+    "体育场",
+    "本源体育场",
+    "Stadium",
+    "操场"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "canteen_jy1",
+   "zh": "柳园聚英园",
+   "en": "Juyingyuan Canteen (Liuyuan)",
+   "cat": "food",
+   "lat": 34.81513,
+   "lon": 113.522805,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "聚英园",
+    "柳园餐厅",
+    "Halal Canteen",
+    "清真食堂",
+    "Muslim Canteen"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "canteen_hy1",
+   "zh": "荷园一餐厅",
+   "en": "Heyuan No.1 Canteen",
+   "cat": "food",
+   "lat": 34.821326,
+   "lon": 113.523808,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "荷园一餐厅",
+    "荷园",
+    "Heyuan"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "canteen_ly2",
+   "zh": "柳园风华园",
+   "en": "Fenghuayuan Canteen (Liuyuan)",
+   "cat": "food",
+   "lat": 34.817526,
+   "lon": 113.522303,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "风华园",
+    "Fenghuayuan"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "canteen_jy2",
+   "zh": "菊园秋穗园",
+   "en": "Qiusuiyuan Canteen (Juyuan)",
+   "cat": "food",
+   "lat": 34.813037,
+   "lon": 113.524812,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "秋穗园",
+    "菊园",
+    "Qiusuiyuan"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "canteen_sy",
+   "zh": "松园竞舸园",
+   "en": "Jinggeyuan Canteen (Songyuan)",
+   "cat": "food",
+   "lat": 34.82004,
+   "lon": 113.528825,
+   "conf": "approx",
+   "code": "",
+   "aliases": [
+    "竞舸园",
+    "松园",
+    "Jinggeyuan"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "metro_s",
+   "zh": "郑州大学站（地铁1号线）",
+   "en": "Zhengzhou University Metro Station (Line 1)",
+   "cat": "bus",
+   "lat": 34.8087,
+   "lon": 113.5352,
+   "conf": "high",
+   "code": "",
+   "aliases": [
+    "地铁",
+    "郑州大学站",
+    "Metro",
+    "Subway",
+    "Line 1",
+    "South Gate Metro"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "metro_e",
+   "zh": "郑大科技园站（地铁1号线）",
+   "en": "ZZU Sci-Tech Park Metro Station (Line 1)",
+   "cat": "bus",
+   "lat": 34.818,
+   "lon": 113.5356,
+   "conf": "high",
+   "code": "",
+   "aliases": [
+    "地铁",
+    "郑大科技园站",
+    "Metro",
+    "Subway",
+    "Line 1",
+    "East Gate Metro"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  },
+  {
+   "id": "metro_n",
+   "zh": "河南工业大学站（地铁1号线）",
+   "en": "Henan University of Technology Metro Station (Line 1)",
+   "cat": "bus",
+   "lat": 34.828,
+   "lon": 113.536,
+   "conf": "high",
+   "code": "",
+   "aliases": [
+    "地铁",
+    "河南工业大学站",
+    "Metro",
+    "Subway",
+    "Line 1",
+    "North Gate Metro"
+   ],
+   "dz": "",
+   "de": "",
+   "photos": []
+  }
+ ]
+}

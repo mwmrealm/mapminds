@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<meta name="theme-color" content="#2F80ED" />
+<title>MapMinds Admin</title>
+<link rel="icon" type="image/png" href="icons/favicon-32.png" />
+<link rel="stylesheet" href="vendor/fa/css/all.min.css" />
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+<style>
+:root { --navy:#1F3A5F; --sky:#2F80ED; --sky2:#7CC4FF; --red:#C9161D; --bg:#EAF4FF; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html,body { margin:0; height:100%; font-family: system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color:var(--navy); background: var(--bg); }
+body { background: radial-gradient(circle at 15% 10%, #cfe8ff 0, transparent 45%), radial-gradient(circle at 90% 85%, #ffd9dc 0, transparent 40%), var(--bg); }
+.glass { background: rgba(255,255,255,.62); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 8px 30px rgba(31,58,95,.12); border-radius: 20px; }
+.card { background: rgba(255,255,255,.85); border: 1px solid rgba(255,255,255,.9); border-radius: 14px; }
+button { font: inherit; cursor: pointer; border: 0; }
+.btn { padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.btn.pri { color:#fff; background: linear-gradient(135deg, var(--sky), #5aa9ff); box-shadow: 0 4px 14px rgba(47,128,237,.4); }
+.btn.sec { background: rgba(255,255,255,.9); color: var(--navy); border: 1px solid rgba(31,58,95,.12); }
+.btn.red { background: #fff; color: var(--red); border: 1px solid rgba(201,22,29,.3); }
+.btn.sm { padding: 6px 12px; font-size: 12px; }
+.btn[disabled] { opacity: .55; cursor: default; }
+label { display:block; font-size: 12px; font-weight: 600; margin: 10px 0 4px; color:#4b5d78; }
+input, select, textarea { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(31,58,95,.18); background: rgba(255,255,255,.95); font: inherit; font-size: 15px; color: var(--navy); }
+textarea { resize: vertical; min-height: 60px; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--sky2); border-color: var(--sky); }
+.row { display:flex; gap:8px; } .row > * { flex:1; min-width:0; }
+.hide { display:none !important; }
+#top { display:flex; align-items:center; gap:10px; padding: 10px 14px; margin: 10px; }
+#top h1 { font-size: 17px; margin: 0; flex: 1; min-width: 0; }
+#top small { display:block; font-weight:500; font-size:11px; color:#667; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#layout { display:grid; grid-template-columns: 360px 1fr; gap: 10px; padding: 0 10px 10px; height: calc(100% - 74px); }
+#side { display:flex; flex-direction:column; min-height:0; padding: 12px; }
+#list { overflow-y:auto; flex:1; margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+.item { display:flex; align-items:center; gap:10px; padding: 8px; text-align:left; width:100%; color:inherit; }
+.item.sel { outline: 2px solid var(--sky); }
+.thumb { width:46px; height:46px; border-radius:10px; background:#dbeafe; object-fit:cover; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; }
+.item b { display:block; font-size:14px; line-height:1.2; } .item span { font-size:11px; color:#667; }
+.warn { color:#b45309; }
+#mapwrap { position:relative; min-height:0; border-radius:20px; overflow:hidden; } #map { position:absolute; inset:0; }
+#form { position:absolute; right:10px; top:10px; bottom:10px; width: 390px; max-width: calc(100% - 20px); overflow-y:auto; padding: 14px; z-index:500; }
+.crosshair { position:absolute; left:50%; top:50%; width:26px; height:26px; margin:-13px 0 0 -13px; z-index:450; pointer-events:none; color:var(--red); font-size:26px; text-align:center; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
+.photos { display:flex; gap:8px; flex-wrap:wrap; }
+.ph { position:relative; width:84px; height:84px; border-radius:12px; overflow:hidden; background:#dbeafe; }
+.ph img { width:100%; height:100%; object-fit:cover; display:block; }
+.ph button { position:absolute; top:3px; right:3px; width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; font-size:11px; }
+.addph { width:84px; height:84px; border-radius:12px; border:2px dashed rgba(47,128,237,.5); background:rgba(255,255,255,.6); color:var(--sky); font-size:22px; }
+#toast { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:2000; background:var(--navy); color:#fff; padding:10px 16px; border-radius:999px; font-size:13px; max-width:92vw; box-shadow:0 6px 20px rgba(0,0,0,.25); }
+#gate { position:fixed; inset:0; z-index:1500; display:flex; align-items:center; justify-content:center; padding:16px; overflow:auto; background: rgba(234,244,255,.8); backdrop-filter: blur(8px); }
+#gate .glass { width:100%; max-width:460px; padding:22px; }
+.note { font-size:12px; color:#556; line-height:1.45; margin:6px 0 0; }
+.note a { color: var(--sky); }
+.qrbox { text-align:center; padding:10px; } .qrbox canvas, .qrbox img { max-width:200px; width:100%; }
+.pill { display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:#e0f0ff; }
+.pill.bad { background:#fee2e2; color:#b91c1c; } .pill.ok { background:#dcfce7; color:#166534; }
+@media (max-width: 820px) {
+  html,body { height:auto; } body { overflow:auto; }
+  #layout { display:block; height:auto; }
+  #mapwrap { height: 46vh; margin-bottom:10px; } #side { max-height: none; } #list { max-height: 50vh; }
+  #form { position:fixed; left:8px; right:8px; top:auto; bottom:8px; width:auto; max-width:none; max-height: 82vh; z-index:900; }
+}
+</style>
+</head>
+<body>
+
+<div id="top" class="glass">
+  <img src="icons/favicon-32.png" width="28" height="28" alt="" style="border-radius:8px" />
+  <h1>MapMinds Admin <small id="repoLbl">Not connected</small></h1>
+  <button class="btn sec sm" onclick="Admin.reload()" title="Reload from GitHub"><i class="fa-solid fa-rotate"></i></button>
+  <button class="btn sec sm" onclick="Admin.openSetup()" title="Settings"><i class="fa-solid fa-gear"></i></button>
+  <a class="btn sec sm" href="index.html" title="Open the public app" style="text-decoration:none;color:inherit"><i class="fa-solid fa-map"></i></a>
+</div>
+
+<div id="layout">
+  <aside id="side" class="glass">
+    <div class="row">
+      <button class="btn pri" onclick="Admin.newPlace()"><i class="fa-solid fa-plus"></i> Add place</button>
+      <button class="btn sec" onclick="Admin.download()"><i class="fa-solid fa-download"></i> JSON</button>
+    </div>
+    <input id="q" placeholder="Search places 搜索地点…" style="margin-top:10px" oninput="Admin.renderList()" />
+    <div id="list"></div>
+  </aside>
+  <section id="mapwrap" class="glass">
+    <div id="map"></div>
+    <div id="cross" class="crosshair hide"><i class="fa-solid fa-crosshairs"></i></div>
+
+    <div id="form" class="glass hide">
+      <div style="display:flex;align-items:center;gap:8px">
+        <h2 id="fTitle" style="margin:0;font-size:17px;flex:1">Place</h2>
+        <button class="btn sec sm" onclick="Admin.closeForm()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <label>Chinese name 中文名</label><input id="fZh" placeholder="钟楼" />
+      <label>English name</label><input id="fEn" placeholder="Clock Tower" />
+      <div class="row">
+        <div><label>Category</label><select id="fCat"></select></div>
+        <div><label>Building no. (optional)</label><input id="fCode" placeholder="17" /></div>
+      </div>
+      <label>Description (English)</label><textarea id="fDe" placeholder="A short note shown under the photo…"></textarea>
+      <label>描述（中文）</label><textarea id="fDz" placeholder="显示在照片下方的简短说明…"></textarea>
+      <label>Other names / search words (separate with ;)</label><input id="fAl" placeholder="landmark;bell tower;地标" />
+
+      <label>Location</label>
+      <div class="row"><input id="fLat" inputmode="decimal" placeholder="lat" onchange="Admin.coordTyped()" /><input id="fLon" inputmode="decimal" placeholder="lon" onchange="Admin.coordTyped()" /></div>
+      <div id="gpsInfo" class="note">Stand at the place and press the blue button, or tap the map / drag the red target to the exact building.</div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn pri" id="gpsBtn" onclick="Admin.markHere()"><i class="fa-solid fa-location-crosshairs"></i> Mark where I'm standing</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sec sm" onclick="Admin.useCenter()"><i class="fa-solid fa-crosshairs"></i> Use map centre</button>
+        <button class="btn sec sm" onclick="Admin.toggleSat()"><i class="fa-solid fa-satellite"></i> Satellite</button>
+      </div>
+
+      <label>Photos 照片</label>
+      <div class="photos" id="fPhotos"></div>
+      <input type="file" id="fFile" accept="image/*" multiple class="hide" onchange="Admin.addFiles(this.files)" />
+      <p class="note">Photos are shrunk to about 1280 px automatically. On a phone you can take one with the camera.</p>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn pri" id="saveBtn" onclick="Admin.save()"><i class="fa-solid fa-cloud-arrow-up"></i> Save</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sec sm" onclick="Admin.showQR()"><i class="fa-solid fa-qrcode"></i> QR / link</button>
+        <button class="btn red sm" id="delBtn" onclick="Admin.remove()"><i class="fa-solid fa-trash"></i> Delete</button>
+      </div>
+      <div id="qrOut" class="qrbox hide"></div>
+    </div>
+  </section>
+</div>
+
+<!-- connect / settings -->
+<div id="gate" class="hide">
+  <div class="glass">
+    <h2 style="margin:0 0 4px">Connect to your site</h2>
+    <p class="note" style="margin-top:0">Places and photos are saved straight into your GitHub repository, so every visitor sees them after the site redeploys (about a minute). Only someone with your token can change anything.</p>
+    <div class="row"><div><label>GitHub user / organisation</label><input id="gOwner" placeholder="yourname" autocapitalize="off" /></div><div><label>Repository</label><input id="gRepo" placeholder="mapminds" autocapitalize="off" /></div></div>
+    <div class="row"><div><label>Branch</label><input id="gBranch" value="main" autocapitalize="off" /></div><div><label>Folder of the site in the repo</label><input id="gPrefix" placeholder="(leave empty)" autocapitalize="off" /></div></div>
+    <label>Access token (fine-grained, Contents: read &amp; write)</label>
+    <input id="gToken" type="password" placeholder="github_pat_…" autocomplete="off" />
+    <details style="margin-top:6px"><summary class="note" style="cursor:pointer">Advanced: GitHub address (proxy)</summary><input id="gApi" placeholder="https://api.github.com  (leave empty)" autocapitalize="off" /></details>
+    <p class="note">The token stays only in this browser. See <b>DEPLOY.md</b> → “Create the admin token”.</p>
+    <div id="gMsg" class="note warn"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn pri" onclick="Admin.connect()"><i class="fa-solid fa-plug"></i> Connect</button>
+      <button class="btn sec" onclick="Admin.diagnose()">Run test</button>
+      <button class="btn sec" onclick="Admin.localMode()">Try without GitHub</button>
+      <button class="btn sec hide" id="gClose" onclick="Admin.closeSetup()">Close</button>
+    </div>
+    <p class="note">“Try without GitHub” loads the places already in this site; your edits stay in this browser and you can download <code>places.json</code> to publish by hand.</p>
+    <div class="row" style="margin-top:6px"><button class="btn red sm hide" id="gOut" onclick="Admin.disconnect()">Forget token on this device</button></div>
+  </div>
+</div>
+<div id="sbGate" class="hide" style="position:fixed;inset:0;z-index:1600;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(234,244,255,.85);backdrop-filter:blur(8px)">
+  <div class="glass" style="width:100%;max-width:420px;padding:22px">
+    <h2 style="margin:0 0 4px">Admin sign in</h2>
+    <p class="note" style="margin-top:0">Only the admin account can add, change or delete places. Visitors can only read.</p>
+    <label>Admin email</label><input id="sbEmail" type="email" autocomplete="username" autocapitalize="off" />
+    <label>Password</label><input id="sbPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')Admin.sbLogin()" />
+    <div id="sbMsg" class="note warn"></div>
+    <div class="row" style="margin-top:12px"><button class="btn pri" onclick="Admin.sbLogin()"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button><button class="btn sec hide" id="sbClose" onclick="Admin.closeSb()">Close</button></div>
+    <div class="row" style="margin-top:8px"><button class="btn red sm hide" id="sbOut" onclick="Admin.sbLogout()">Sign out</button></div>
+  </div>
+</div>
+<div id="toast" class="hide"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+{
+  "version": 2,
+  "nodes": [
+    {
+      "id": "main_entrance",
+      "placeId": "gate_s",
+      "name": "South Gate",
+      "nameZh": "南门",
+      "qrId": "QR_ENTRANCE_001",
+      "floor": 0,
+      "category": "gate",
+      "lat": 34.8091,
+      "lon": 113.5341,
+      "description": "South Gate / 南门"
+    },
+    {
+      "id": "gate_e",
+      "placeId": "gate_e",
+      "name": "East Gate",
+      "nameZh": "东门",
+      "qrId": "QR_GATE_E_001",
+      "floor": 0,
+      "category": "gate",
+      "lat": 34.818058,
+      "lon": 113.535247,
+      "description": "East Gate / 东门"
+    },
+    {
+      "id": "gate_n",
+      "placeId": "gate_n",
+      "name": "North Gate",
+      "nameZh": "北门",
+      "qrId": "QR_GATE_N_001",
+      "floor": 0,
+      "category": "gate",
+      "lat": 34.8277,
+      "lon": 113.5348,
+      "description": "North Gate / 北门"
+    },
+    {
+      "id": "library",
+      "placeId": "library",
+      "name": "Library",
+      "nameZh": "图书馆",
+      "qrId": "QR_LIBRARY_001",
+      "floor": 0,
+      "category": "library",
+      "lat": 34.81954,
+      "lon": 113.528324,
+      "description": "Library / 图书馆"
+    },
+    {
+      "id": "clock_tower",
+      "placeId": "clock_tower",
+      "name": "Clock Tower",
+      "nameZh": "钟楼",
+      "qrId": "QR_CLOCK_TOWER_001",
+      "floor": 0,
+      "category": "photo",
+      "lat": 34.819131,
+      "lon": 113.524912,
+      "description": "Clock Tower / 钟楼"
+    },
+    {
+      "id": "admin_office",
+      "placeId": "admin",
+      "name": "Administration Building",
+      "nameZh": "综合管理中心",
+      "qrId": "QR_ADMIN_001",
+      "floor": 0,
+      "category": "building",
+      "lat": 34.817038,
+      "lon": 113.526819,
+      "description": "Administration Building / 综合管理中心"
+    },
+    {
+      "id": "core_s",
+      "placeId": "core_s",
+      "name": "South Core Teaching Area",
+      "nameZh": "南核心教学区",
+      "qrId": "QR_CORE_S_001",
+      "floor": 0,
+      "category": "building",
+      "lat": 34.812041,
+      "lon": 113.525816,
+      "description": "South Core Teaching Area / 南核心教学区"
+    },
+    {
+      "id": "core_n",
+      "placeId": "core_n",
+      "name": "North Core Teaching Area",
+      "nameZh": "北核心教学区",
+      "qrId": "QR_CORE_N_001",
+      "floor": 0,
+      "category": "building",
+      "lat": 34.82303,
+      "lon": 113.525815,
+      "description": "North Core Teaching Area / 北核心教学区"
+    },
+    {
+      "id": "sie",
+      "placeId": "sie",
+      "name": "School of International Education",
+      "nameZh": "国际教育学院",
+      "qrId": "QR_SIE_001",
+      "floor": 0,
+      "category": "building",
+      "lat": 34.814762,
+      "lon": 113.519694,
+      "description": "School of International Education / 国际教育学院"
+    },
+    {
+      "id": "stadium",
+      "placeId": "stadium",
+      "name": "Ben Yuan Stadium",
+      "nameZh": "本源体育场",
+      "qrId": "QR_STADIUM_001",
+      "floor": 0,
+      "category": "sports",
+      "lat": 34.824039,
+      "lon": 113.529828,
+      "description": "Ben Yuan Stadium / 本源体育场"
+    },
+    {
+      "id": "canteen",
+      "placeId": "canteen_jy1",
+      "name": "Juyingyuan Canteen (Liuyuan)",
+      "nameZh": "柳园聚英园",
+      "qrId": "QR_CANTEEN_001",
+      "floor": 0,
+      "category": "food",
+      "lat": 34.81513,
+      "lon": 113.522805,
+      "description": "Juyingyuan Canteen (Liuyuan) / 柳园聚英园"
+    },
+    {
+      "id": "canteen_hy1",
+      "placeId": "canteen_hy1",
+      "name": "Heyuan No.1 Canteen",
+      "nameZh": "荷园一餐厅",
+      "qrId": "QR_CANTEEN_HY1_001",
+      "floor": 0,
+      "category": "food",
+      "lat": 34.821326,
+      "lon": 113.523808,
+      "description": "Heyuan No.1 Canteen / 荷园一餐厅"
+    },
+    {
+      "id": "canteen_ly2",
+      "placeId": "canteen_ly2",
+      "name": "Fenghuayuan Canteen (Liuyuan)",
+      "nameZh": "柳园风华园",
+      "qrId": "QR_CANTEEN_LY2_001",
+      "floor": 0,
+      "category": "food",
+      "lat": 34.817526,
+      "lon": 113.522303,
+      "description": "Fenghuayuan Canteen (Liuyuan) / 柳园风华园"
+    },
+    {
+      "id": "canteen_jy2",
+      "placeId": "canteen_jy2",
+      "name": "Qiusuiyuan Canteen (Juyuan)",
+      "nameZh": "菊园秋穗园",
+      "qrId": "QR_CANTEEN_JY2_001",
+      "floor": 0,
+      "category": "food",
+      "lat": 34.813037,
+      "lon": 113.524812,
+      "description": "Qiusuiyuan Canteen (Juyuan) / 菊园秋穗园"
+    },
+    {
+      "id": "canteen_sy",
+      "placeId": "canteen_sy",
+      "name": "Jinggeyuan Canteen (Songyuan)",
+      "nameZh": "松园竞舸园",
+      "qrId": "QR_CANTEEN_SY_001",
+      "floor": 0,
+      "category": "food",
+      "lat": 34.82004,
+      "lon": 113.528825,
+      "description": "Jinggeyuan Canteen (Songyuan) / 松园竞舸园"
+    },
+    {
+      "id": "metro_s",
+      "placeId": "metro_s",
+      "name": "Zhengzhou University Metro Station (Line 1)",
+      "nameZh": "郑州大学站（地铁1号线）",
+      "qrId": "QR_METRO_S_001",
+      "floor": 0,
+      "category": "bus",
+      "lat": 34.8087,
+      "lon": 113.5352,
+      "description": "Zhengzhou University Metro Station (Line 1) / 郑州大学站（地铁1号线）"
+    },
+    {
+      "id": "metro_e",
+      "placeId": "metro_e",
+      "name": "ZZU Sci-Tech Park Metro Station (Line 1)",
+      "nameZh": "郑大科技园站（地铁1号线）",
+      "qrId": "QR_METRO_E_001",
+      "floor": 0,
+      "category": "bus",
+      "lat": 34.818,
+      "lon": 113.5356,
+      "description": "ZZU Sci-Tech Park Metro Station (Line 1) / 郑大科技园站（地铁1号线）"
+    },
+    {
+      "id": "metro_n",
+      "placeId": "metro_n",
+      "name": "Henan University of Technology Metro Station (Line 1)",
+      "nameZh": "河南工业大学站（地铁1号线）",
+      "qrId": "QR_METRO_N_001",
+      "floor": 0,
+      "category": "bus",
+      "lat": 34.828,
+      "lon": 113.536,
+      "description": "Henan University of Technology Metro Station (Line 1) / 河南工业大学站（地铁1号线）"
+    },
+    {
+      "id": "lecture_hall_a",
+      "name": "Lecture Hall A",
+      "qrId": "QR_LECTURE_A_001",
+      "floor": 1,
+      "description": "Sample indoor node - first floor",
+      "sample": true
+    },
+    {
+      "id": "computer_lab",
+      "name": "Computer Lab",
+      "qrId": "QR_COMPLAB_001",
+      "floor": 1,
+      "description": "Sample indoor node - first floor",
+      "sample": true
+    }
+  ],
+  "edges": [
+    {
+      "fromNodeId": "main_entrance",
+      "toNodeId": "metro_s",
+      "distance": 142.8,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "core_s",
+      "toNodeId": "main_entrance",
+      "distance": 1071.2,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_jy2",
+      "toNodeId": "main_entrance",
+      "distance": 1240.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "gate_e",
+      "toNodeId": "metro_e",
+      "distance": 42.7,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_sy",
+      "toNodeId": "gate_e",
+      "distance": 814.2,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "gate_e",
+      "toNodeId": "library",
+      "distance": 849.0,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "gate_n",
+      "toNodeId": "metro_n",
+      "distance": 148.8,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "gate_n",
+      "toNodeId": "stadium",
+      "distance": 792.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "core_n",
+      "toNodeId": "gate_n",
+      "distance": 1261.9,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_sy",
+      "toNodeId": "library",
+      "distance": 93.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "admin_office",
+      "toNodeId": "library",
+      "distance": 403.4,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "clock_tower",
+      "toNodeId": "library",
+      "distance": 409.2,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_hy1",
+      "toNodeId": "clock_tower",
+      "distance": 343.3,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "admin_office",
+      "toNodeId": "clock_tower",
+      "distance": 377.8,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_ly2",
+      "toNodeId": "clock_tower",
+      "distance": 386.9,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "admin_office",
+      "toNodeId": "canteen_sy",
+      "distance": 495.0,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_jy2",
+      "toNodeId": "core_s",
+      "distance": 186.9,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen",
+      "toNodeId": "core_s",
+      "distance": 571.9,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "admin_office",
+      "toNodeId": "core_s",
+      "distance": 732.1,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_hy1",
+      "toNodeId": "core_n",
+      "distance": 342.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "core_n",
+      "toNodeId": "stadium",
+      "distance": 498.0,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_sy",
+      "toNodeId": "core_n",
+      "distance": 560.7,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen",
+      "toNodeId": "sie",
+      "distance": 373.0,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_ly2",
+      "toNodeId": "sie",
+      "distance": 505.5,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_jy2",
+      "toNodeId": "sie",
+      "distance": 656.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_sy",
+      "toNodeId": "stadium",
+      "distance": 590.2,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "library",
+      "toNodeId": "stadium",
+      "distance": 674.4,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen",
+      "toNodeId": "canteen_ly2",
+      "distance": 351.4,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen",
+      "toNodeId": "canteen_jy2",
+      "distance": 385.1,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_hy1",
+      "toNodeId": "canteen_ly2",
+      "distance": 577.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "admin_office",
+      "toNodeId": "canteen_jy2",
+      "distance": 625.5,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_sy",
+      "toNodeId": "clock_tower",
+      "distance": 482.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "core_s",
+      "toNodeId": "metro_s",
+      "distance": 1213.9,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "metro_e",
+      "toNodeId": "metro_s",
+      "distance": 1345.2,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "canteen_sy",
+      "toNodeId": "metro_e",
+      "distance": 856.4,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "library",
+      "toNodeId": "metro_e",
+      "distance": 891.7,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "metro_n",
+      "toNodeId": "stadium",
+      "distance": 929.6,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "core_n",
+      "toNodeId": "metro_n",
+      "distance": 1406.0,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "library",
+      "toNodeId": "lecture_hall_a",
+      "distance": 60.0,
+      "isAccessible": false
+    },
+    {
+      "fromNodeId": "canteen",
+      "toNodeId": "computer_lab",
+      "distance": 70.0,
+      "isAccessible": false
+    },
+    {
+      "fromNodeId": "lecture_hall_a",
+      "toNodeId": "computer_lab",
+      "distance": 25.0,
+      "isAccessible": true
+    },
+    {
+      "fromNodeId": "admin_office",
+      "toNodeId": "lecture_hall_a",
+      "distance": 80.0,
+      "isAccessible": false
+    }
+  ]
+}
