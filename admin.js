@@ -73,8 +73,22 @@ const Admin = (() => {
 
 
   /* ---------- Supabase backend (free database + photo storage) ---------- */
-  const SBC = window.MM_CONFIG || {}, sbOn = !!(SBC.supabaseUrl && SBC.anonKey), sbUrl = () => mmSupabaseBase(SBC.supabaseUrl);
-  let SES = lsGet('mm_sb_session', null);
+  const SBC = Object.assign({}, window.MM_CONFIG || {}), sbOn = !!(SBC.supabaseUrl && SBC.anonKey), sbUrl = () => mmSupabaseBase(SBC.supabaseUrl);
+  SBC.anonKey = String(SBC.anonKey || '').replace(/\s+/g, ''); let SES = lsGet('mm_sb_session', null);
+  function sbExplain(e) {
+    const m = String((e && e.message) || ''), st = e && e.status;
+    if (e instanceof TypeError) return 'Cannot reach Supabase from this browser (network or VPN). Try another network or VPN server.';
+    if (/invalid path/i.test(m)) return 'The Supabase address in config.js looks wrong. This page is calling: "' + sbUrl() + '" — it must look like https://abcdxyz.supabase.co (no spaces, nothing after .supabase.co).';
+    if (/invalid login|invalid_credentials/i.test(m)) return 'Wrong email or password. (Use the user you created in Supabase → Authentication → Users.)';
+    if (/not confirmed/i.test(m)) return 'This email is not confirmed. In Supabase → Authentication → Users, delete the user and add it again with “Auto Confirm User” ticked.';
+    if (/signups? (not allowed|disabled)|user not found/i.test(m)) return 'No such user. Create it in Supabase → Authentication → Users → Add user.';
+    if (/invalid api key|no api key|apikey/i.test(m)) return 'The key in config.js is not accepted. Copy the Publishable key again (Project Settings → API Keys) and check for spaces.';
+    if (/could not find the table|does not exist|PGRST205/i.test(m) || st === 404) return 'The "places" table is missing. Run supabase/setup.sql in Supabase → SQL Editor, then try again.';
+    if (/row-level security|42501|permission denied/i.test(m) || st === 403) return 'This account is not an admin. The email on the last line of setup.sql must match your login email exactly. Fix: in SQL Editor run  insert into public.admins (email) values (\'your@email.com\');';
+    if (st === 401) return 'Session expired — please sign in again.';
+    if (/violates check constraint|places_sane/i.test(m)) return 'The database rejected this place (name missing, bad coordinates or too many photos).';
+    return m || 'Something went wrong.';
+  }
   const sbFields = ['id', 'zh', 'en', 'cat', 'code', 'lat', 'lon', 'conf', 'aliases', 'dz', 'de', 'photos'];
   async function sbAuth(body, grant) {
     const r = await fetch(sbUrl() + '/auth/v1/token?grant_type=' + grant, { method: 'POST', headers: { apikey: SBC.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -95,10 +109,11 @@ const Admin = (() => {
     return r.status === 204 ? null : (r.headers.get('content-type') || '').includes('json') ? r.json() : null;
   }
   const sbLoad = async () => (await sbReq('/rest/v1/places?select=*&order=id', {}, false)) || [];
-  async function sbUpsert(rec) {
-    const row = {}; sbFields.forEach(k => { row[k] = rec[k] === undefined ? null : rec[k]; }); row.code = row.code || ''; row.aliases = row.aliases || []; row.photos = row.photos || [];
-    await sbReq('/rest/v1/places?on_conflict=id', { method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(row) }, true);
+  function sbRow(rec) { const row = {}; sbFields.forEach(k => { row[k] = rec[k] === undefined ? null : rec[k]; }); row.code = row.code || ''; row.aliases = row.aliases || []; row.photos = row.photos || []; row.conf = row.conf || 'approx'; return row; }
+  async function sbUpsertMany(list) {
+    await sbReq('/rest/v1/places?on_conflict=id', { method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(list.map(sbRow)) }, true);
   }
+  const sbUpsert = rec => sbUpsertMany([rec]);
   const sbDelete = id => sbReq('/rest/v1/places?id=eq.' + encodeURIComponent(id), { method: 'DELETE' }, true);
   async function sbUpload(path, blob) {
     path = path.replace(/^photos\//, ''); await sbReq('/storage/v1/object/photos/' + path, { method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }, body: blob }, true);
@@ -110,16 +125,16 @@ const Admin = (() => {
     const email = $('sbEmail').value.trim(), pw = $('sbPass').value; if (!email || !pw) { $('sbMsg').textContent = 'Enter your admin email and password.'; return; }
     $('sbMsg').textContent = 'Signing in…';
     try { await sbAuth({ email, password: pw }, 'password'); lsSet('mm_sb_email', email); await sbStart(); closeSb(); }
-    catch (e) { $('sbMsg').textContent = /invalid path/i.test(e.message || '') ? 'The Supabase address in config.js looks wrong. This page is calling: "' + sbUrl() + '" — it must look like https://abcdxyz.supabase.co (no spaces, nothing after .supabase.co).' : e instanceof TypeError ? 'Cannot reach Supabase from this browser (network/VPN).' : (e.status === 400 ? 'Wrong email or password.' : e.message); }
+    catch (e) { SES = null; try { localStorage.removeItem('mm_sb_session'); } catch (x) {} $('sbMsg').textContent = sbExplain(e); }
   }
   async function sbStart() {
     PLACES = await sbLoad(); MODE = 'sb'; afterLoad();
     if (!PLACES.length && confirm('The database is empty. Import the starter places from this site (data/places.json)?')) {
       try {
         const seed = (await (await fetch('data/places.json?t=' + Date.now())).json()).places || [];
-        for (const p of seed) await sbUpsert(p);
+        await sbUpsertMany(seed);
         PLACES = await sbLoad(); afterLoad(); toast('Imported ' + PLACES.length + ' places');
-      } catch (e) { toast('Import failed: ' + e.message, 6000); }
+      } catch (e) { toast('Import failed: ' + sbExplain(e), 8000); }
     } else toast('Signed in · ' + PLACES.length + ' places');
   }
   function sbLogout() { SES = null; try { localStorage.removeItem('mm_sb_session'); } catch (e) {} MODE = null; PLACES = []; openSb('Signed out.'); }
@@ -169,7 +184,7 @@ const Admin = (() => {
     closeSetup(); afterLoad(); toast('Local mode — edits stay in this browser. Use “JSON” to download them.', 5000);
   }
   async function reload() {
-    if (MODE === 'sb') { try { PLACES = await sbLoad(); afterLoad(); toast('Reloaded'); } catch (e) { toast('Reload failed: ' + e.message, 5000); } }
+    if (MODE === 'sb') { try { PLACES = await sbLoad(); afterLoad(); toast('Reloaded'); } catch (e) { toast('Reload failed: ' + sbExplain(e), 6000); } }
     else if (MODE === 'gh') { try { PLACES = (await readRemote()).data.places; afterLoad(); toast('Reloaded'); } catch (e) { toast('Reload failed: ' + e.message, 5000); } }
     else if (MODE === 'local') { try { localStorage.removeItem('mm_admin_local'); } catch (e) {} localMode(); }
     else openSetup();
@@ -197,7 +212,15 @@ const Admin = (() => {
   function ensureMap() {
     if (map) return;
     map = L.map('map', { zoomControl: true }).setView(CAMPUS, 16);
-    osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+    const C = window.MM_CONFIG || {}, chain = [];
+    if (C.tileUrl) chain.push([C.tileUrl, C.tileAttribution || '© map providers']);
+    chain.push(['https://tile.openstreetmap.org/{z}/{x}/{y}.png', '© OpenStreetMap'], ['https://tile.openstreetmap.de/{z}/{x}/{y}.png', '© OpenStreetMap'], ['https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', '© OpenStreetMap, HOT']);
+    let ti = 0, errs = 0;
+    const mk = () => { const l = L.tileLayer(chain[ti][0], { maxZoom: 19, subdomains: 'abc', attribution: chain[ti][1] });
+      l.on('tileload', () => { errs = 0; });
+      l.on('tileerror', () => { if (++errs >= 6 && ti < chain.length - 1 && !satOn) { errs = 0; ti++; map.removeLayer(osm); osm = mk().addTo(map); osm.bringToBack(); toast('Map server slow — switched to a backup.', 3000); } });
+      return l; };
+    osm = mk().addTo(map);
     sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Imagery © Esri' });
     layer = L.layerGroup().addTo(map);
     map.on('click', e => { if (EDIT) setPos(e.latlng.lat, e.latlng.lng, 'high', null); });
@@ -344,7 +367,8 @@ const Admin = (() => {
       toast(MODE === 'sb' ? 'Saved ✓  Live for everyone now.' : MODE === 'gh' ? 'Saved ✓  Live for everyone in about a minute.' : 'Saved in this browser ✓', 4500);
       EDIT.pending = []; closeForm();
     } catch (e) {
-      toast('Save failed: ' + (e.status === 401 || e.status === 403 ? 'token has no write permission' : e.message), 6000);
+      if (MODE === 'sb') { toast('Save failed: ' + sbExplain(e), 9000); if (e.status === 401) { MODE = null; openSb('Session expired — please sign in again.'); } }
+      else toast('Save failed: ' + (e.status === 401 || e.status === 403 ? 'token has no write permission' : e.message), 6000);
     } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save'; }
   }
   async function remove() {
@@ -355,7 +379,7 @@ const Admin = (() => {
       if (MODE === 'sb') { await sbDelete(id); f(PLACES); }
       else if (MODE === 'gh') await commitChange(f, 'Delete ' + id); else { f(PLACES); lsSet('mm_admin_local', PLACES); }
       closeForm(); toast('Deleted');
-    } catch (e) { toast('Delete failed: ' + e.message, 5000); }
+    } catch (e) { toast('Delete failed: ' + (MODE === 'sb' ? sbExplain(e) : e.message), 8000); }
   }
 
   /* ---------- QR / link / download ---------- */
@@ -377,7 +401,7 @@ const Admin = (() => {
   function init() {
     fillCats(); $('fCat').onchange = () => { if (EDIT) placeEditMarker(); }; ensureMap();
     window.addEventListener('beforeunload', e => { if (EDIT && (EDIT.pending.length)) { e.preventDefault(); e.returnValue = ''; } });
-    if (sbOn) { if (SES) sbStart().catch(e => { openSb(e.status === 401 || e.status === 400 ? 'Please sign in again.' : 'Could not connect: ' + e.message); }); else openSb(); }
+    if (sbOn) { if (SES) sbStart().catch(e => { openSb(e.status === 401 || e.status === 400 ? 'Please sign in again.' : sbExplain(e)); }); else openSb(); }
     else if (CFG && CFG.token) { MODE = null; connect2(); } else openSetup();
   }
   async function connect2() {                                       // silent reconnect with the saved token
