@@ -3,5 +3,5 @@
    Leave empty to keep using the static data/places.json file. */
 window.MM_CONFIG = {
   supabaseUrl: 'https://blpsqhmnydqhdctglwqk.supabase.co/rest/v1/',
-  anonKey: 'sb_publishable_nO7j8WgkYSTErLrOljXVVQ__d7CjI7U'        
+  anonKey: 'sb_publishable_nO7j8WgkYSTErLrOljXVVQ__d7CjI7U'
 };
