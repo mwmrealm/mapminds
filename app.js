@@ -79,6 +79,7 @@ const markers = {};
    HELPERS
    ===================================================================== */
 const $ = id => document.getElementById(id);
+const isAdminDevice = () => { try { return !!localStorage.getItem('mm_sb_session') || localStorage.getItem('mm_editor') === '1'; } catch (e) { return false; } };
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
@@ -319,9 +320,11 @@ function rebuildPlaces() {
 async function loadPlaces(force) {
   await loadOwn();
   CUSTOM = jget('mm_custom', []); HIDDEN = jget('mm_hidden', []); OVER = jget('mm_over', {});
-  const cached = jget('mm_places', null);
-  if (cached && cached.items) { OSMP = cached.items; dataTime = cached.t; dataLive = OSMP.length > 0; }
+  const CFGX = window.MM_CONFIG || {}, useOsm = CFGX.useOsm === true;     // extra buildings from OpenStreetMap are OFF unless config.js says useOsm: true
+  const cached = useOsm ? jget('mm_places', null) : null;
+  if (cached && cached.items) { OSMP = cached.items; dataTime = cached.t; dataLive = OSMP.length > 0; } else OSMP = [];
   rebuildPlaces();
+  if (!useOsm) { dataLive = !!(CFGX.supabaseUrl && CFGX.anonKey); dataState = PLACES.length ? 'ok' : 'error'; renderDynamic(); return; }
   dataState = PLACES.length ? 'ok' : 'loading'; renderDynamic();
   if (cached && !force && Date.now() - cached.t < DATA_TTL) return;
   if (!navigator.onLine) { if (force) toast(T('offlineBadge')); return; }
@@ -429,19 +432,23 @@ function makeBase(kind) {
   return L.tileLayer(t.u, { ...opts, subdomains: t.s, attribution: t.a });
 }
 function watchTileErrors(layer) {
-  let errs = 0;
-  layer.on('tileload', () => { errs = 0; });
-  layer.on('tileerror', () => {
-    if (++errs >= 6 && navigator.onLine && !satOn && tileIdx < TILES.length - 1) {
-      errs = 0; tileIdx++; tileFallbackUsed = true; map.removeLayer(baseLayer); baseLayer = makeBase('osm').addTo(map); baseLayer.bringToBack(); watchTileErrors(baseLayer); toast(T('tilesAlt'), 4000);
-    }
-  });
+  let errs = 0, loaded = false;
+  const next = () => {
+    if (satOn || baseLayer !== layer || !navigator.onLine) return;
+    if (tileIdx < TILES.length - 1) {
+      tileIdx++; tileFallbackUsed = true; map.removeLayer(baseLayer); baseLayer = makeBase('osm').addTo(map); baseLayer.bringToBack(); watchTileErrors(baseLayer); toast(T('tilesAlt'), 4000);
+    } else { toggleSat(); toast(T('tilesSat'), 5000); }          // no street-map server reachable here: satellite works on this network
+  };
+  layer.on('tileload', () => { errs = 0; loaded = true; });
+  layer.on('tileerror', () => { if (++errs >= 6) next(); });
+  setTimeout(() => { if (!loaded) next(); }, 7000);               // tiles that never answer produce no error event
 }
 function ensureMap() {
   if (map) return;
   map = L.map('liveMap', { zoomControl: false, attributionControl: true, tap: true }).setView(CAMPUS.center, 16);
   L.control.zoom({ position: 'bottomleft' }).addTo(map);
-  baseLayer = makeBase('osm').addTo(map); watchTileErrors(baseLayer);
+  if (store.get('mm_sat', '0') === '1') { satOn = true; baseLayer = makeBase('sat').addTo(map); $('liveMap').classList.add('sat'); }
+  else { baseLayer = makeBase('osm').addTo(map); watchTileErrors(baseLayer); }
   altLayer = L.layerGroup().addTo(map);
   routeLayer = L.layerGroup().addTo(map);
   markerLayer = L.layerGroup().addTo(map);
@@ -465,7 +472,7 @@ function toggleSat() {
   satOn = !satOn; map.removeLayer(baseLayer);
   baseLayer = makeBase(satOn ? 'sat' : 'osm').addTo(map); baseLayer.bringToBack();
   if (!satOn) watchTileErrors(baseLayer);
-  $('liveMap').classList.toggle('sat', satOn);
+  $('liveMap').classList.toggle('sat', satOn); store.set('mm_sat', satOn ? '1' : '0');
 }
 function recenter() { if (map) map.flyTo(CAMPUS.center, 16); }
 function pinIcon(p, sel) {
@@ -482,7 +489,7 @@ function refreshMarkers() {
   list.forEach(p => {
     const sel = SELECTED && SELECTED.id === p.id;
     const m = L.marker([p.lat, p.lon], { icon: pinIcon(p, sel), title: dl(p), alt: dl(p), keyboard: true, draggable: editing });
-    if (z >= 17 || editing) m.bindTooltip(dl(p), { permanent: true, direction: 'bottom', offset: [0, 2], className: 'pin-label' });
+    if ((z >= 17 && list.length <= 30) || editing) m.bindTooltip(dl(p), { permanent: true, direction: 'bottom', offset: [0, 2], className: 'pin-label' });
     m.on('click', () => { if (!navigating) selectPlace(p.id, false); });
     if (editing && typeof editorDragEnd === 'function') m.on('dragend', ev => editorDragEnd(p, ev.target.getLatLng()));
     m.addTo(markerLayer); markers[p.id] = m;
@@ -526,6 +533,7 @@ function renderCard() {
   const sub = [catLabel(p.cat)]; if (SELECTED_ROOM) sub.unshift(roomText(SELECTED_ROOM)); if (ref) sub.push(fmt(T('away'), { d: fmtDist(hav(ref, [p.lat, p.lon])) }));
   $('pcSub').textContent = sub.join(' · ');
   $('pcApprox').style.display = p.approx ? 'inline-flex' : 'none';
+  const pa = $('pcAdmin'); if (pa) { pa.style.display = (isAdminDevice() && p.own) ? 'inline-flex' : 'none'; pa.href = 'admin.html#edit=' + encodeURIComponent(p.id); }
   const ph = $('pcPhotos'), ds = $('pcDesc'), pics = p.photos || [];
   ph.innerHTML = ''; ph.style.display = pics.length ? 'flex' : 'none';
   pics.forEach((src, i) => { const im = document.createElement('img'); im.src = src; im.loading = 'lazy'; im.alt = dl(p); im.className = 'pc-photo'; im.onclick = () => openPhoto(p, i); im.onerror = () => im.remove(); ph.appendChild(im); });

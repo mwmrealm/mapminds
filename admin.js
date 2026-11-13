@@ -116,7 +116,16 @@ const Admin = (() => {
   const sbUpsert = rec => sbUpsertMany([rec]);
   const sbDelete = id => sbReq('/rest/v1/places?id=eq.' + encodeURIComponent(id), { method: 'DELETE' }, true);
   async function sbUpload(path, blob) {
-    path = path.replace(/^photos\//, ''); await sbReq('/storage/v1/object/photos/' + path, { method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }, body: blob }, true);
+    path = path.replace(/^photos\//, '');
+    try { await sbReq('/storage/v1/object/photos/' + path, { method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'x-upsert': 'false' }, body: blob }, true); }
+    catch (e) {
+      const m = String(e.message || '');
+      if (/bucket not found/i.test(m)) throw Object.assign(new Error('The "photos" storage bucket does not exist. Re-run supabase/setup.sql in Supabase → SQL Editor, then save again.'), { status: 0 });
+      if (e.status === 403 || /row-level|unauthorized|not allowed|policy/i.test(m)) throw Object.assign(new Error('Photo storage refused the upload (storage permission). Re-run the storage part of supabase/setup.sql in SQL Editor, then save again. Details: ' + m.slice(0, 80)), { status: 0 });
+      if (e.status === 413 || /too large|size/i.test(m)) throw Object.assign(new Error('The photo is too large (limit 3 MB).'), { status: 0 });
+      if (e.status === 415 || /mime/i.test(m)) throw Object.assign(new Error('This photo type is not allowed (use JPG, PNG or WebP).'), { status: 0 });
+      throw e;
+    }
     return sbUrl() + '/storage/v1/object/public/photos/' + path;
   }
   function openSb(msg) { $('sbEmail').value = (SES && SES.email) || lsGet('mm_sb_email', ''); $('sbPass').value = ''; $('sbMsg').textContent = msg || ''; $('sbOut').classList.toggle('hide', !SES); $('sbClose').classList.toggle('hide', !MODE); $('sbGate').classList.remove('hide'); }
@@ -192,6 +201,7 @@ const Admin = (() => {
   function afterLoad() {
     $('repoLbl').textContent = MODE === 'sb' ? 'Database · ' + ((SES && SES.email) || 'admin') : MODE === 'gh' ? CFG.owner + '/' + CFG.repo + ' · ' + CFG.branch : 'Local mode (not saved to GitHub)';
     renderList(); renderMap();
+    if (!afterLoad.h) { afterLoad.h = 1; const m = location.hash.match(/^#edit=(.+)$/); if (m) { const id = decodeURIComponent(m[1]); if (PLACES.some(p => p.id === id)) edit(id); } else if (location.hash === '#new') newPlace(); }
   }
 
   /* ---------- list + map ---------- */
@@ -215,13 +225,23 @@ const Admin = (() => {
     const C = window.MM_CONFIG || {}, chain = [];
     if (C.tileUrl) chain.push([C.tileUrl, C.tileAttribution || '© map providers']);
     chain.push(['https://tile.openstreetmap.org/{z}/{x}/{y}.png', '© OpenStreetMap'], ['https://tile.openstreetmap.de/{z}/{x}/{y}.png', '© OpenStreetMap'], ['https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', '© OpenStreetMap, HOT']);
-    let ti = 0, errs = 0;
-    const mk = () => { const l = L.tileLayer(chain[ti][0], { maxZoom: 19, subdomains: 'abc', attribution: chain[ti][1] });
-      l.on('tileload', () => { errs = 0; });
-      l.on('tileerror', () => { if (++errs >= 6 && ti < chain.length - 1 && !satOn) { errs = 0; ti++; map.removeLayer(osm); osm = mk().addTo(map); osm.bringToBack(); toast('Map server slow — switched to a backup.', 3000); } });
-      return l; };
-    osm = mk().addTo(map);
+    let ti = 0;
+    const nextTile = l => {
+      if (satOn || osm !== l) return;
+      if (ti < chain.length - 1) { ti++; map.removeLayer(osm); osm = mk().addTo(map); osm.bringToBack(); toast('Map server slow — switched to a backup.', 3000); }
+      else { toggleSat(); toast('Street map not reachable here — showing satellite.', 4000); }
+    };
+    function mk() {
+      let errs = 0, loaded = false; const l = L.tileLayer(chain[ti][0], { maxZoom: 19, subdomains: 'abc', attribution: chain[ti][1] });
+      l.on('tileload', () => { errs = 0; loaded = true; });
+      l.on('tileerror', () => { if (++errs >= 6) nextTile(l); });
+      setTimeout(() => { if (!loaded) nextTile(l); }, 7000);
+      return l;
+    }
+    osm = mk();
     sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Imagery © Esri' });
+    let startSat = false; try { startSat = localStorage.getItem('mm_sat') === '1'; } catch (e) {}
+    if (startSat) { satOn = true; sat.addTo(map); } else osm.addTo(map);
     layer = L.layerGroup().addTo(map);
     map.on('click', e => { if (EDIT) setPos(e.latlng.lat, e.latlng.lng, 'high', null); });
     map.on('move', updateCross);
@@ -237,7 +257,7 @@ const Admin = (() => {
     if (!renderMap.fitted && PLACES.length) { map.fitBounds(L.latLngBounds(PLACES.map(p => [p.lat, p.lon])).pad(.2)); renderMap.fitted = true; }
     setTimeout(() => map.invalidateSize(), 50);
   }
-  function toggleSat() { satOn = !satOn; if (satOn) { map.removeLayer(osm); sat.addTo(map); } else { map.removeLayer(sat); osm.addTo(map); } }
+  function toggleSat() { satOn = !satOn; try { localStorage.setItem('mm_sat', satOn ? '1' : '0'); } catch (e) {} if (satOn) { map.removeLayer(osm); sat.addTo(map); } else { map.removeLayer(sat); osm.addTo(map); } }
   function updateCross() { $('cross').classList.toggle('hide', !(EDIT && EDIT.lat == null)); }
 
   /* ---------- form ---------- */
@@ -247,7 +267,7 @@ const Admin = (() => {
     $('fZh').value = state.zh || ''; $('fEn').value = state.en || ''; $('fCat').value = state.cat || 'building'; $('fCode').value = state.code || '';
     $('fDe').value = state.de || ''; $('fDz').value = state.dz || ''; $('fAl').value = (state.aliases || []).join(';');
     $('delBtn').classList.toggle('hide', state.isNew); $('qrOut').classList.add('hide'); $('qrOut').innerHTML = '';
-    $('form').classList.remove('hide'); showPos(); renderPhotos(); renderList(); placeEditMarker(); updateCross();
+    $('form').classList.remove('hide', 'min'); document.body.classList.add('formOpen'); $('side').classList.remove('open'); window.scrollTo(0, 0); setTimeout(() => map && map.invalidateSize(), 120); showPos(); renderPhotos(); renderList(); placeEditMarker(); updateCross();
     $('gpsInfo').textContent = state.lat == null ? 'Stand at the place and press the blue button, or move the map so the red target is on the building and press “Use map centre”.' : (state.conf === 'high' ? 'Position saved as accurate.' : 'Position is approximate — mark it again on site.');
   }
   function edit(id) {
@@ -260,7 +280,7 @@ const Admin = (() => {
     openForm({ id: null, isNew: true, cat: 'building', lat: null, lon: null, conf: 'approx', photos: [], pending: [], aliases: [] }, 'New place');
     renderMap();
   }
-  function closeForm() { EDIT = null; stopGps(); $('form').classList.add('hide'); if (editMarker) { map.removeLayer(editMarker); editMarker = null; } renderList(); renderMap(); updateCross(); }
+  function closeForm() { EDIT = null; stopGps(); $('form').classList.add('hide'); document.body.classList.remove('formOpen'); setTimeout(() => map && map.invalidateSize(), 120); if (editMarker) { map.removeLayer(editMarker); editMarker = null; } renderList(); renderMap(); updateCross(); }
   function showPos() { $('fLat').value = EDIT && EDIT.lat != null ? (+EDIT.lat).toFixed(6) : ''; $('fLon').value = EDIT && EDIT.lon != null ? (+EDIT.lon).toFixed(6) : ''; }
   function placeEditMarker() {
     if (editMarker) { map.removeLayer(editMarker); editMarker = null; }
@@ -279,6 +299,8 @@ const Admin = (() => {
     const a = parseFloat($('fLat').value), b = parseFloat($('fLon').value);
     if (isFinite(a) && isFinite(b) && EDIT) { setPos(a, b, 'high', null); map.panTo([a, b]); }
   }
+  function toggleMin() { $('form').classList.toggle('min'); }
+  function toggleList() { $('side').classList.toggle('open'); }
   function useCenter() { if (!EDIT) return; const c = map.getCenter(); setPos(c.lat, c.lng, 'high', null); }
 
   /* GPS: collect fixes for a few seconds and keep the most accurate one */
@@ -409,7 +431,7 @@ const Admin = (() => {
     try { const r = await readRemote(); PLACES = r.data.places; MODE = 'gh'; afterLoad(); }
     catch (e) { $('repoLbl').textContent = 'Not connected'; openSetup(); $('gMsg').textContent = 'Could not reconnect: ' + (e.message || e); }
   }
-  return { init, sbLogin, sbLogout, closeSb, diagnose, openSetup, closeSetup, connect, disconnect, localMode, reload, renderList, newPlace, closeForm, markHere, useCenter, toggleSat, coordTyped, addFiles, save, remove, showQR, download };
+  return { toggleMin, toggleList, init, sbLogin, sbLogout, closeSb, diagnose, openSetup, closeSetup, connect, disconnect, localMode, reload, renderList, newPlace, closeForm, markHere, useCenter, toggleSat, coordTyped, addFiles, save, remove, showQR, download };
 })();
 window.Admin = Admin; window.$ = $;
 Admin.init();

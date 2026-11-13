@@ -47,3 +47,5 @@ Object.assign(I18N.zh, {
 });
 Object.assign(I18N.en, { catEmpty: 'No places in this category yet — they appear when live map data loads, or add them in the map editor.' });
 Object.assign(I18N.zh, { catEmpty: '该分类暂无地点：联网加载实时地图数据后会出现，也可在地图编辑器中添加。' });
+Object.assign(I18N.en, { tilesSat: 'Street map is not reachable on this network — showing satellite.', adminLink: 'Admin dashboard', adminSub: 'Add or edit places and photos', editInAdmin: 'Edit in admin' });
+Object.assign(I18N.zh, { tilesSat: '当前网络无法加载街道地图，已切换为卫星图。', adminLink: '管理后台', adminSub: '添加或编辑地点与照片', editInAdmin: '在后台编辑' });

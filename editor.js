@@ -108,8 +108,10 @@ function editorExport() {
 }
 
 /* ---------- unlocking ---------- */
-function showEditorRow() { const r = $('editorRow'); if (r) r.style.display = 'flex'; }
+function showEditorRow() { const r = $('editorRow'); if (r) r.style.display = 'flex'; showAdminRow(); }
+function showAdminRow() { const r = $('adminRow'); if (r) r.style.display = 'flex'; }
 function editorInit() {
+  if (isAdminDevice() || /[?&]admin=1/.test(location.search)) showAdminRow();
   if (store.get('mm_editor', '0') === '1' || /[?&]edit=1/.test(location.search)) { store.set('mm_editor', '1'); showEditorRow(); }
   let taps = 0, last = 0; const v = $('verTap');
   if (v) v.addEventListener('click', () => {

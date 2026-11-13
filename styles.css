@@ -189,3 +189,13 @@ body.navigating .leaflet-control-zoom, body.routing .leaflet-control-zoom { disp
 .pv-close { top: calc(12px + env(safe-area-inset-top)); right: 12px; }
 .pv-nav { top: 50%; transform: translateY(-50%); }
 @keyframes pvIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+
+/* iPhone / iPad Safari and in-app browsers: blur layers over scrolling lists and many pins leave grey smears and heavy black shadows, so use flat translucent fills there */
+@supports (-webkit-touch-callout: none) {
+  .white-card, .chip, .pill, .pin-label, .glass-overlay { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .white-card { background: rgba(255,255,255,.9); }
+  body.dark .white-card { background: rgba(24,40,66,.88); }
+  .pin, .pin.sel { box-shadow: 0 2px 5px rgba(0,0,0,.25); }
+  .pin.sel { box-shadow: 0 0 0 3px rgba(47,128,237,.35), 0 3px 8px rgba(0,0,0,.3); }
+}
+.pin { box-shadow: 0 2px 6px rgba(0,0,0,.26); }

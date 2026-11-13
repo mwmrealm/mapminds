@@ -61,8 +61,25 @@ function updateUserArrow() {
   w.classList.toggle('nav', !!show);
   if (show) w.style.setProperty('--rot', USER.heading + 'deg');
 }
+/* compass: Android fires deviceorientationabsolute; iPhone needs a tap-permission and gives webkitCompassHeading */
+let compassOn = false;
+function listenCompass() {
+  if (compassOn) return; compassOn = true;
+  window.addEventListener('deviceorientation', e => {
+    let h = e.webkitCompassHeading;
+    if (h == null && e.absolute && e.alpha != null) h = (360 - e.alpha) % 360;
+    if (h == null || isNaN(h)) return;
+    compassHeading = h;
+    if (USER && !NAV.sim && (USER.speed || 0) < 0.6) { USER.heading = h; updateUserArrow(); }
+  }, true);
+}
+function enableCompass() {
+  const DO = window.DeviceOrientationEvent;
+  if (DO && typeof DO.requestPermission === 'function') { DO.requestPermission().then(r => { if (r === 'granted') listenCompass(); }).catch(() => {}); }
+  else listenCompass();
+}
 function locateMe() {
-  ensureMap();
+  enableCompass(); ensureMap();
   if (USER) map.flyTo([USER.lat, USER.lon], Math.max(map.getZoom(), 17));
   startGPS(() => { if (USER && map) map.flyTo([USER.lat, USER.lon], Math.max(map.getZoom(), 17)); });
 }
@@ -229,6 +246,7 @@ async function computeRoutes(s, dest, mode, silent) {
    DIRECTIONS (preview)
    ===================================================================== */
 async function startDirections() {
+  enableCompass();
   if (!SELECTED) return;
   ensureMap();
   if (NAV.on) endNav(true);

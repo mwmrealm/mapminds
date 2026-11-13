@@ -177,6 +177,7 @@
                 <button id="pcFav" onclick="toggleFav()" class="white-card w-8 h-8 rounded-full flex items-center justify-center shrink-0" aria-label="Save place"><i class="fa-regular fa-star text-navySoft text-sm"></i></button>
                 <button onclick="closeCard()" class="white-card w-8 h-8 rounded-full flex items-center justify-center shrink-0" aria-label="Close"><i class="fa-solid fa-xmark text-navySoft text-sm"></i></button>
               </div>
+              <a id="pcAdmin" href="admin.html" class="pill mt-2" style="display:none;text-decoration:none;"><i class="fa-solid fa-pen mr-1"></i><span data-i18n="editInAdmin">Edit in admin</span></a>
               <p id="pcDesc" class="text-xs text-slate-600 mt-2 leading-snug" style="display:none;"></p>
               <div id="pcApprox" class="pill warn mt-2" style="display:none;"><i class="fa-solid fa-circle-exclamation mr-1"></i><span data-i18n="approx">Approximate location</span></div>
               <div class="flex gap-2 mt-3">
@@ -422,6 +423,11 @@
             <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-circle-info text-zzu"></i></div><p class="text-sm font-semibold text-navySoft" data-i18n="about">About Us</p></div>
             <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
           </button>
+          <a id="adminRow" href="admin.html" class="w-full flex items-center justify-between p-3" style="display:none;">
+            <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-user-shield text-zzu"></i></div>
+              <div class="text-left"><p class="text-sm font-semibold text-navySoft" data-i18n="adminLink">Admin dashboard</p><p class="text-xs text-slate-500" data-i18n="adminSub">Add or edit places and photos</p></div></div>
+            <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+          </a>
           <button id="editorRow" onclick="editorEnter()" class="w-full flex items-center justify-between p-3" style="display:none;">
             <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-skyLight flex items-center justify-center"><i class="fa-solid fa-pen-ruler text-zzu"></i></div>
               <div class="text-left"><p class="text-sm font-semibold text-navySoft" data-i18n="editor">Map editor</p><p class="text-xs text-slate-500" data-i18n="editorSub">Drag pins to their exact spot, then export</p></div></div>
