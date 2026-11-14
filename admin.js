@@ -221,7 +221,7 @@ const Admin = (() => {
   }
   function ensureMap() {
     if (map) return;
-    map = L.map('map', { zoomControl: true }).setView(CAMPUS, 16);
+    map = L.map('map', { zoomControl: true, attributionControl: false }).setView(CAMPUS, 16);
     const C = window.MM_CONFIG || {}, chain = [];
     if (C.tileUrl) chain.push([C.tileUrl, C.tileAttribution || '© map providers']);
     chain.push(['https://tile.openstreetmap.org/{z}/{x}/{y}.png', '© OpenStreetMap'], ['https://tile.openstreetmap.de/{z}/{x}/{y}.png', '© OpenStreetMap'], ['https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', '© OpenStreetMap, HOT']);
