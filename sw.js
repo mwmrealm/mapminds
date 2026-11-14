@@ -3,7 +3,7 @@
    - map tiles: cache-first, size-capped
    - live APIs (Overpass / routing): always network
    Bump VERSION whenever any precached file changes. */
-const VERSION = 'v13';
+const VERSION = 'v14';
 const SHELL = 'mm-shell-' + VERSION;
 const TILES = 'mm-tiles';
 const TILE_MAX = 900;

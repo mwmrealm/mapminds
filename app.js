@@ -445,7 +445,7 @@ function watchTileErrors(layer) {
 }
 function ensureMap() {
   if (map) return;
-  map = L.map('liveMap', { zoomControl: false, attributionControl: true, tap: true }).setView(CAMPUS.center, 16);
+  map = L.map('liveMap', { zoomControl: false, attributionControl: false, tap: true }).setView(CAMPUS.center, 16);
   L.control.zoom({ position: 'bottomleft' }).addTo(map);
   if (store.get('mm_sat', '0') === '1') { satOn = true; baseLayer = makeBase('sat').addTo(map); $('liveMap').classList.add('sat'); }
   else { baseLayer = makeBase('osm').addTo(map); watchTileErrors(baseLayer); }
